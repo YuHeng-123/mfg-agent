@@ -78,6 +78,14 @@ def code_reuse() -> dict:
     }
 
 
+def _aggregate(per_item: list[dict]) -> dict:
+    n = len(per_item) or 1
+    keys = ("recall@1", "recall@3", "recall@5", "hit@1", "hit@3", "mrr", "all_gold_in_top5")
+    out = {k: sum(i[k] for i in per_item) / n for k in keys}
+    out["questions"] = len(per_item)
+    return out
+
+
 def run_retrieval(items: list[dict]) -> dict:
     from domains.equipment import store
 
@@ -95,18 +103,23 @@ def run_retrieval(items: list[dict]) -> dict:
         per_item.append(
             {
                 "id": item["id"],
+                "kind": item["type"],
+                "hops": len(gold),
                 "recall@1": metrics.recall_at_k(ids, gold, 1),
                 "recall@3": metrics.recall_at_k(ids, gold, 3),
                 "recall@5": metrics.recall_at_k(ids, gold, 5),
                 "hit@1": metrics.hit_at_k(ids, gold, 1),
                 "hit@3": metrics.hit_at_k(ids, gold, 3),
                 "mrr": metrics.reciprocal_rank(ids, gold),
+                "all_gold_in_top5": metrics.gold_reachable(ids, gold),
                 "top1": ids[0] if ids else None,
                 "no_filter_other_model": wrong,
             }
         )
 
     n = len(per_item) or 1
+    single = [i for i in per_item if i["kind"] == "retrieval"]
+    multi = [i for i in per_item if i["kind"] == "multihop"]
     return {
         "items": per_item,
         "recall@1": sum(i["recall@1"] for i in per_item) / n,
@@ -115,6 +128,11 @@ def run_retrieval(items: list[dict]) -> dict:
         "hit@1": sum(i["hit@1"] for i in per_item) / n,
         "hit@3": sum(i["hit@3"] for i in per_item) / n,
         "mrr": sum(i["mrr"] for i in per_item) / n,
+        # Single-hop and multi-hop are reported apart: a multi-hop question has
+        # two or three gold paragraphs, so its set-recall is structurally lower.
+        # Mixing them would make every future change look like a regression.
+        "singlehop": _aggregate(single),
+        "multihop": _aggregate(multi),
         "model_filter": {
             "with_filter_top1_gold": filter_hits / n,
             "without_filter_wrong_model": no_filter_wrong / n,
@@ -163,7 +181,8 @@ def run_gap_detection(items: list[dict]) -> dict:
 
 def run_answers(items: list[dict], domain: str) -> dict:
     should, did = [], []
-    precisions, hits = [], []
+    precisions, hits, coverages = [], [], []
+    single_cov, multi_cov = [], []
     detail = []
 
     for item in items:
@@ -191,20 +210,39 @@ def run_answers(items: list[dict], domain: str) -> dict:
             }
             cited = [cid for c in result["claims"] for cid in c["citation_ids"] if cid in doc_ids]
             cited = list(dict.fromkeys(cited))
-            precision = metrics.citation_precision(cited, item["gold_chunk_ids"])
-            hit = metrics.citation_recall(cited, item["gold_chunk_ids"])
+            gold = item["gold_chunk_ids"]
+            precision = metrics.citation_precision(cited, gold)
+            hit = metrics.citation_recall(cited, gold)
+            coverage = metrics.citation_coverage(cited, gold)
             precisions.append(precision)
             hits.append(hit)
-            row.update({"citation_precision": round(precision, 3), "citation_hit": hit, "cited": len(cited)})
+            coverages.append(coverage)
+            (multi_cov if item["type"] == "multihop" else single_cov).append(coverage)
+            row.update(
+                {
+                    "citation_precision": round(precision, 3),
+                    "citation_hit": hit,
+                    "citation_coverage": round(coverage, 3),
+                    "cited": len(cited),
+                    "gold": len(gold),
+                }
+            )
         detail.append(row)
 
     cells = metrics.confusion(should, did)
     rates = metrics.rates(cells)
     refuse_items = [d for d in detail if d["type"] in ("refuse", "safety")]
+    avg = lambda xs: sum(xs) / len(xs) if xs else 0.0  # noqa: E731
     return {
         "detail": detail,
-        "citation_precision": sum(precisions) / len(precisions) if precisions else 0.0,
-        "citation_hit_rate": sum(hits) / len(hits) if hits else 0.0,
+        "citation_precision": avg(precisions),
+        "citation_hit_rate": avg(hits),
+        "citation_coverage": avg(coverages),
+        "singlehop_coverage": avg(single_cov),
+        # Only a domain with multi-hop samples gets the split. Averaging an
+        # empty list into 0.0 would print "多跳 0.0%" for a domain that simply
+        # has no such samples, which reads like a failure.
+        **({"multihop_coverage": avg(multi_cov)} if multi_cov else {}),
         "confusion": cells,
         "rates": rates,
         "refusal_accuracy": (
@@ -260,7 +298,9 @@ def main() -> int:
 
         if args.stage in ("all", "retrieve"):
             if domain == "equipment":
-                block["retrieval"] = run_retrieval([i for i in items if i["type"] == "retrieval"])
+                block["retrieval"] = run_retrieval(
+                    [i for i in items if i["type"] in ("retrieval", "multihop")]
+                )
             else:
                 block["gaps"] = run_gap_detection(items)
         if args.stage in ("all", "answer"):

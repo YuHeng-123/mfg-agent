@@ -81,9 +81,12 @@ def gap_record(req: GapRecordRequest) -> dict:
 def latest_eval() -> dict:
     """The numbers shown in the page footer come from a real report file."""
 
-    # The footer strip wants a *complete* run. Ablation files and partial runs
-    # (--stage retrieve) live in the same folder and have a different shape, so
-    # pick the newest file that actually carries both halves.
+    # The footer strip wants a *complete* run: both domains, both stages.
+    # Ablation files, --stage retrieve runs and --domain equipment sweeps all
+    # live in the same folder and have a different shape. Picking the newest
+    # file that merely has an equipment half made the page quote a compliance
+    # block that was never written, which failed with a KeyError the moment
+    # someone ran a single-domain sweep.
     files = sorted(
         f for f in REPORTS_DIR.glob("*.json") if f.name[:8].isdigit() and not f.name.startswith("ablation")
     )
@@ -91,8 +94,15 @@ def latest_eval() -> dict:
     data: dict = {}
     for candidate in reversed(files):
         payload = json.loads(candidate.read_text(encoding="utf-8"))
-        eq_ok = "retrieval" in payload.get("equipment", {}) and "answer" in payload.get("equipment", {})
-        if eq_ok:
+        eq = payload.get("equipment", {})
+        cp = payload.get("compliance", {})
+        complete = (
+            "retrieval" in eq
+            and "answer" in eq
+            and "gaps" in cp
+            and "answer" in cp
+        )
+        if complete:
             path, data = candidate, payload
             break
     if path is None:

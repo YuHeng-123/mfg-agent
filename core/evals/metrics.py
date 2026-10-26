@@ -47,6 +47,33 @@ def citation_recall(cited: list[str], gold: list[str]) -> float:
     return 1.0 if set(cited) & set(gold) else 0.0
 
 
+def citation_coverage(cited: list[str], gold: list[str]) -> float:
+    """Share of the gold set that actually made it into the answer.
+
+    citation_recall asks "did we cite anything right" and is therefore always
+    0 or 1. For a multi-hop question the gold set has two or three paragraphs,
+    and citing one of them answers half the question. Coverage is the number
+    that exposes that; single-hop coverage equals citation_recall by construction.
+    """
+
+    if not gold:
+        return 0.0
+    return len(set(cited) & set(gold)) / len(set(gold))
+
+
+def gold_reachable(retrieved: list[str], gold: list[str]) -> float:
+    """1.0 if every gold paragraph is present in the retrieved set.
+
+    Separates two failures that look identical under recall: "the paragraph was
+    retrieved but never made it into the answer" (an assembly problem) and "the
+    paragraph was never retrieved" (a retrieval problem).
+    """
+
+    if not gold:
+        return 0.0
+    return 1.0 if set(gold) <= set(retrieved) else 0.0
+
+
 def confusion(should_answer: list[bool], did_answer: list[bool]) -> dict[str, int]:
     """2x2 over (should answer?) x (did answer?)."""
 

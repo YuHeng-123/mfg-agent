@@ -21,6 +21,7 @@ from core.config import settings
 from core.types import Citation, Claim, ToolResult
 
 CLAIM_LIMIT = 5
+SUPPORT_LIMIT = 3
 SENTENCE_END = re.compile(r"(?<=[。；;！!？?])")
 
 
@@ -89,7 +90,7 @@ class StubProvider:
         # ended up in an air-compressor answer during the first eval run.
         documents.sort(key=lambda c: -c.score)
         if documents and documents[0].score > 0:
-            cut = documents[0].score * 0.6
+            cut = documents[0].score * settings.support_score_ratio
             documents = [c for c in documents if c.score >= cut] or documents[:1]
 
         # If the question names a code (E05, P04, 7.1.6), the paragraph about
@@ -103,7 +104,14 @@ class StubProvider:
                 c for c in documents if any(code in (c.section or "").upper() for code in codes)
             ]
             in_body = [c for c in documents if any(code in c.snippet.upper() for code in codes)]
-            documents = in_title or in_body or documents
+            if settings.support_code_mode == "prefer" and in_title:
+                # Reorder, do not drop: on a multi-hop question the spare-part
+                # table is a legitimate second half of the answer, and dropping
+                # every paragraph outside the code section throws it away.
+                rest = [c for c in documents if c not in in_title]
+                documents = in_title + rest
+            else:
+                documents = in_title or in_body or documents
 
         # A tool can cite the same paragraph once per finding; dedupe before
         # anyone turns it into a sentence.
@@ -128,8 +136,8 @@ class StubProvider:
                 claims.append(Claim(text=text, citation_ids=ids, confidence="high"))
 
         already = {cid for claim in claims for cid in claim.citation_ids}
-        support = [c for c in documents if c.chunk_id not in already]
-        for cite in support[:3]:
+        support = [c for c in documents if c.chunk_id not in already][:SUPPORT_LIMIT]
+        for cite in support:
             snippet = _row_for(cite.snippet, question)
             body = _first_sentence(_clean(snippet))[:100]
             where = cite.section or (f"第 {cite.page} 页" if cite.page else "原文")

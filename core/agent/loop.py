@@ -24,6 +24,11 @@ from core.types import Answer, Claim, Citation, Refusal, ToolResult, TraceStep
 from domains.base import Domain, Tool, load_domain
 
 RE_CODE = re.compile(r"\b[A-Z]{1,2}\d{2,3}\b")
+# Clause boundaries. Deliberately punctuation-level and language-agnostic: the
+# core is not allowed to know that a question might contain a fault code, so it
+# cannot parse "which section answers which part" either. It just splits.
+RE_CLAUSE = re.compile(r"[，,；;。]|以及|另外|并且|同时|还有")
+MIN_CLAUSE_LEN = 6
 
 
 @dataclass
@@ -105,6 +110,26 @@ def _extract_code(question: str) -> str | None:
     return match.group(0) if match else None
 
 
+def _decompose(question: str) -> list[str]:
+    """Split a question into clauses that can be retrieved separately.
+
+    "AX300 报 E05 怎么处置，备件型号是什么" is two retrieval problems sharing one
+    string. Ranked as one query, whichever half matches more terms wins and the
+    other half never reaches the answer. Splitting costs one extra tool call per
+    clause and is the reason multi-hop questions are answerable at all.
+    """
+
+    parts: list[str] = []
+    for raw in RE_CLAUSE.split(question):
+        clause = raw.strip()
+        if len(clause) >= MIN_CLAUSE_LEN and clause not in parts:
+            parts.append(clause)
+    # The whole string is still retrieved once as well: the clause split is a
+    # supplement, not a replacement, and tools that are not a text search
+    # (sensor replay, ticket history) should still see the original question.
+    return parts if len(parts) > 1 else []
+
+
 def _plan(domain: Domain, question: str) -> tuple[list[Tool], str]:
     tools = domain.tools()
     primary = [t for t in tools.values() if t.primary]
@@ -123,7 +148,8 @@ def _plan(domain: Domain, question: str) -> tuple[list[Tool], str]:
 def _run_parallel(
     tools: list[Tool], question: str, context: dict, trace: list[TraceStep], start_step: int
 ) -> list[tuple[str, ToolResult]]:
-    jobs: list[tuple[Tool, dict]] = []
+    clauses = _decompose(question) if settings.decompose_clauses else []
+    jobs: list[tuple[Tool, dict, str]] = []
     for tool in tools:
         args = _build_args(tool, question, context)
         if args is None:
@@ -131,7 +157,15 @@ def _run_parallel(
                 TraceStep(step=start_step, tool=tool.name, ok=False, note="参数不满足，跳过")
             )
             continue
-        jobs.append((tool, args))
+        jobs.append((tool, args, ""))
+        # Only the primary retrieval is decomposed. Re-running a ticket lookup
+        # once per clause would multiply the same rows; re-running it on the
+        # original question is what a human would do.
+        if tool.primary and tool.read_only and clauses:
+            for clause in clauses:
+                sub = _build_args(tool, clause, context)
+                if sub is not None:
+                    jobs.append((tool, sub, clause))
 
     def work(tool: Tool, args: dict) -> ToolResult:
         if settings.tool_latency_ms:
@@ -140,13 +174,16 @@ def _run_parallel(
 
     outputs: list[tuple[str, ToolResult]] = []
     with ThreadPoolExecutor(max_workers=max(len(jobs), 1)) as pool:
-        futures = [(tool, pool.submit(work, tool, args)) for tool, args in jobs]
-        for tool, future in futures:
+        futures = [(tool, pool.submit(work, tool, args), clause) for tool, args, clause in jobs]
+        for tool, future, clause in futures:
             try:
                 result = future.result(timeout=settings.tool_timeout_s + settings.tool_latency_ms / 1000)
             except Exception as exc:  # timeout or crash: record it, keep going
                 result = ToolResult(ok=False, error=f"{type(exc).__name__}: {exc}")
             outputs.append((tool.name, result))
+            note = result.error or result.note or ""
+            if clause:
+                note = f"子句检索「{clause}」" + (f"｜{note}" if note else "")
             trace.append(
                 TraceStep(
                     step=start_step,
@@ -155,7 +192,7 @@ def _run_parallel(
                     ok=result.ok,
                     elapsed_ms=result.elapsed_ms,
                     hit_chunk_ids=[c.chunk_id for c in result.citations],
-                    note=result.error or result.note,
+                    note=note,
                 )
             )
     return outputs

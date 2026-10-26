@@ -29,6 +29,23 @@ def _equipment(block: dict) -> None:
             f"       关闭过滤 top1 落到错误型号 {_pct(f['without_filter_wrong_model'])}"
             f"  （{f['questions']} 题）"
         )
+    if "retrieval" in block and "multihop" in block["retrieval"]:
+        s, m = block["retrieval"]["singlehop"], block["retrieval"]["multihop"]
+        print("\n[设备域 · 单跳 vs 多跳]")
+        print(f"  单跳（{s['questions']} 题，gold 1 段）")
+        print(
+            f"    Recall@1 {_pct(s['recall@1'])}   Recall@5 {_pct(s['recall@5'])}   "
+            f"MRR {s['mrr']:.3f}"
+        )
+        print(f"  多跳（{m['questions']} 题，gold 2-3 段）")
+        print(
+            f"    Recall@1 {_pct(m['recall@1'])}   Recall@5 {_pct(m['recall@5'])}   "
+            f"MRR {m['mrr']:.3f}"
+        )
+        print(
+            f"    全部 gold 进 top5 {_pct(m['all_gold_in_top5'])}   "
+            "（不到 100% 说明有一部分是多跳根本没召回，不是没拼进去）"
+        )
     if "answer" in block:
         _answers(block["answer"], "设备域 · 答复")
 
@@ -55,7 +72,15 @@ def _compliance(block: dict) -> None:
 def _answers(a: dict, title: str) -> None:
     c = a["confusion"]
     print(f"\n[{title}]")
-    print(f"  引用精确率 {_pct(a['citation_precision'])}   引用命中率 {_pct(a['citation_hit_rate'])}")
+    print(
+        f"  引用精确率 {_pct(a['citation_precision'])}   引用命中率 {_pct(a['citation_hit_rate'])}   "
+        f"引用覆盖率 {_pct(a['citation_coverage'])}"
+    )
+    if "multihop_coverage" in a:
+        print(
+            f"  覆盖率拆分  单跳 {_pct(a['singlehop_coverage'])}   "
+            f"多跳 {_pct(a['multihop_coverage'])}   （多跳低是对的：gold 有 2-3 段）"
+        )
     print(f"  拒答正确率 {_pct(a['refusal_accuracy'])}   误拒率 {_pct(a['rates']['over_refusal'])}")
     print(
         f"  混淆矩阵  应答/实答 {c['tp']}  应答/实拒 {c['fn']}  "
