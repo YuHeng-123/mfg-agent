@@ -81,7 +81,11 @@ def gap_record(req: GapRecordRequest) -> dict:
 def latest_eval() -> dict:
     """The numbers shown in the page footer come from a real report file."""
 
-    files = sorted(REPORTS_DIR.glob("*.json"))
+    # Ablation reports live in the same folder but have a different shape; the
+    # footer strip only wants full evaluation runs (filename starts with a date).
+    files = sorted(
+        f for f in REPORTS_DIR.glob("*.json") if f.name[:8].isdigit() and not f.name.startswith("ablation")
+    )
     if not files:
         return {"available": False}
     path = files[-1]
