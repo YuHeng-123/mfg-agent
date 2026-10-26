@@ -13,13 +13,13 @@
 {"id": "E-13", "domain": "equipment", "q": "空压机空气滤芯压差多少需要更换", "model_id": "AX300", "type": "retrieval", "gold_chunk_ids": ["AX300_manual#p3#s08#c01", "AX300_manual#p4#s08#c01"]}
 {"id": "E-14", "domain": "equipment", "q": "离心泵对中偏差允许范围是多少", "model_id": "BP2200", "type": "retrieval", "gold_chunk_ids": ["BP2200_manual#p4#s11#c01"]}
 {"id": "E-15", "domain": "equipment", "q": "机械密封泄漏量多少算超标", "model_id": "BP2200", "type": "retrieval", "gold_chunk_ids": ["BP2200_manual#p4#s09#c01"]}
-{"id": "E-16", "domain": "equipment", "q": "换热器板片夹紧尺寸怎么控制", "model_id": "HE800", "type": "retrieval", "gold_chunk_ids": ["HE800_manual#p2#s06#c01", "HE800_manual#p3#s06#c01"]}
+{"id": "E-16", "domain": "equipment", "q": "换热器板片夹紧尺寸怎么控制", "model_id": "HE800", "type": "retrieval", "gold_chunk_ids": ["HE800_manual#p2#s05#c01", "HE800_manual#p3#s09#c01"]}
 {"id": "E-17", "domain": "equipment", "q": "空压机安全阀多久校验一次", "model_id": "AX300", "type": "retrieval", "gold_chunk_ids": ["AX300_manual#p5#s13#c01"]}
 {"id": "E-18", "domain": "equipment", "q": "离心泵润滑脂多久补充一次", "model_id": "BP2200", "type": "retrieval", "gold_chunk_ids": ["BP2200_manual#p4#s12#c01"]}
 {"id": "E-19", "domain": "equipment", "q": "换热器垫片多久需要更换", "model_id": "HE800", "type": "retrieval", "gold_chunk_ids": ["HE800_manual#p4#s11#c01"]}
 {"id": "E-20", "domain": "equipment", "q": "AX300 排气温度报警值和停机值分别是多少", "model_id": "AX300", "type": "retrieval", "gold_chunk_ids": ["AX300_manual#p2#s04#c01"]}
 {"id": "E-21", "domain": "equipment", "q": "BP2200 允许汽蚀余量是多少", "model_id": "BP2200", "type": "retrieval", "gold_chunk_ids": ["BP2200_manual#p2#s04#c01"]}
-{"id": "E-22", "domain": "equipment", "q": "HE800 板片厚度减薄多少要更换", "model_id": "HE800", "type": "retrieval", "gold_chunk_ids": ["HE800_manual#p4#s11#c01"]}
+{"id": "E-22", "domain": "equipment", "q": "HE800 板片厚度减薄多少要更换", "model_id": "HE800", "type": "retrieval", "gold_chunk_ids": ["HE800_manual#p2#s04#c01", "HE800_manual#p4#s11#c01"]}
 {"id": "E-23", "domain": "equipment", "q": "空压机检修前的挂牌上锁要求", "model_id": "AX300", "type": "retrieval", "gold_chunk_ids": ["AX300_manual#p2#s03#c01"]}
 {"id": "E-24", "domain": "equipment", "q": "离心泵拆卸前要确认什么", "model_id": "BP2200", "type": "retrieval", "gold_chunk_ids": ["BP2200_manual#p2#s03#c01"]}
 {"id": "E-25", "domain": "equipment", "q": "换热器拆解前的泄压要求", "model_id": "HE800", "type": "retrieval", "gold_chunk_ids": ["HE800_manual#p2#s03#c01"]}

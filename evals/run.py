@@ -98,6 +98,8 @@ def run_retrieval(items: list[dict]) -> dict:
                 "recall@1": metrics.recall_at_k(ids, gold, 1),
                 "recall@3": metrics.recall_at_k(ids, gold, 3),
                 "recall@5": metrics.recall_at_k(ids, gold, 5),
+                "hit@1": metrics.hit_at_k(ids, gold, 1),
+                "hit@3": metrics.hit_at_k(ids, gold, 3),
                 "mrr": metrics.reciprocal_rank(ids, gold),
                 "top1": ids[0] if ids else None,
                 "no_filter_other_model": wrong,
@@ -110,6 +112,8 @@ def run_retrieval(items: list[dict]) -> dict:
         "recall@1": sum(i["recall@1"] for i in per_item) / n,
         "recall@3": sum(i["recall@3"] for i in per_item) / n,
         "recall@5": sum(i["recall@5"] for i in per_item) / n,
+        "hit@1": sum(i["hit@1"] for i in per_item) / n,
+        "hit@3": sum(i["hit@3"] for i in per_item) / n,
         "mrr": sum(i["mrr"] for i in per_item) / n,
         "model_filter": {
             "with_filter_top1_gold": filter_hits / n,

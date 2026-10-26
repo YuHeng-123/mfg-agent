@@ -84,6 +84,13 @@ class BM25Field:
 
 FIELD_WEIGHTS = {"body": 1.0, "section": 1.8, "title": 1.5}
 
+# Sections that describe the document rather than answer anything. Every real
+# manual opens with one, and it names the model, the family and the device type -
+# which is exactly what user questions are made of, so it wins the ranking while
+# containing no usable answer. Measured: 4 of 7 Recall@1 failures landed here.
+LOW_INFO_SECTIONS = ("适用范围", "总则", "说明", "概述", "前言", "引言", "简介")
+LOW_INFO_WEIGHT = 0.8
+
 
 @dataclass
 class QueryStats:
@@ -106,11 +113,25 @@ class QueryStats:
 class Index:
     """Retrieval over Chunk objects with a mandatory metadata filter hook."""
 
-    def __init__(self, chunks: list[Chunk]) -> None:
+    def __init__(
+        self,
+        chunks: list[Chunk],
+        *,
+        drop_title_terms: bool = False,
+        low_info_penalty: float = 0.5,
+    ) -> None:
         self.chunks = chunks
+        self.drop_title_terms = drop_title_terms
+        self.low_info_penalty = low_info_penalty
         self.body = BM25Field([tokenize(c.text) for c in chunks])
         self.section = BM25Field([tokenize(c.section or "") for c in chunks])
         self.title = BM25Field([tokenize(c.doc_title) for c in chunks])
+        self.section_w = [
+            LOW_INFO_WEIGHT
+            if any(k in (c.section or "") for k in LOW_INFO_SECTIONS)
+            else FIELD_WEIGHTS["section"]
+            for c in chunks
+        ]
 
     # ---- public API -----------------------------------------------------
 
@@ -130,6 +151,19 @@ class Index:
         if not q:
             return []
 
+        # Once the model filter has chosen the document, the words in the document
+        # title add no signal: a device's full name matches every paragraph in its
+        # own manual equally. On the whole set this looked like a +6 point win, but
+        # on the train split it was neutral to negative, so it ships off. Kept as a
+        # switch for larger corpora.
+        if self.drop_title_terms and (model_id or model_ids):
+            title_tokens: set[str] = set()
+            for i in allowed:
+                title_tokens.update(tokenize(self.chunks[i].doc_title))
+            pruned = [t for t in q if t not in title_tokens]
+            if pruned:
+                q = pruned
+
         body = self.body.score(q)
         section = self.section.score(q)
         title = self.title.score(q)
@@ -138,11 +172,16 @@ class Index:
         for i in allowed:
             score = (
                 FIELD_WEIGHTS["body"] * body[i]
-                + FIELD_WEIGHTS["section"] * section[i]
+                + self.section_w[i] * section[i]
                 + FIELD_WEIGHTS["title"] * title[i]
             )
             if score <= 0:
                 continue
+            # A "scope of application" paragraph matches on device names only
+            # and never contains an answer. Penalty applies to the whole score, since
+            # the match lives in the body text, not in the heading.
+            if self.section_w[i] < FIELD_WEIGHTS["section"]:
+                score *= self.low_info_penalty
             hits.append(
                 Hit(
                     chunk=self.chunks[i],

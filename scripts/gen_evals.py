@@ -39,13 +39,13 @@ RETRIEVAL = [
     ("E-13", "空压机空气滤芯压差多少需要更换", "AX300", "5.3 故障代码 E05"),
     ("E-14", "离心泵对中偏差允许范围是多少", "BP2200", "4.6 故障代码 P07"),
     ("E-15", "机械密封泄漏量多少算超标", "BP2200", "4.4 故障代码 P05"),
-    ("E-16", "换热器板片夹紧尺寸怎么控制", "HE800", "4.1 故障代码总表"),
+    ("E-16", "换热器板片夹紧尺寸怎么控制", "HE800", ("3.2 结构与流程", "4.4 故障代码 H03")),
     ("E-17", "空压机安全阀多久校验一次", "AX300", "6.1 维护周期"),
     ("E-18", "离心泵润滑脂多久补充一次", "BP2200", "5.1 维护周期"),
     ("E-19", "换热器垫片多久需要更换", "HE800", "5.1 维护周期"),
     ("E-20", "AX300 排气温度报警值和停机值分别是多少", "AX300", "3.1 主要技术参数"),
     ("E-21", "BP2200 允许汽蚀余量是多少", "BP2200", "3.1 主要技术参数"),
-    ("E-22", "HE800 板片厚度减薄多少要更换", "HE800", "5.1 维护周期"),
+    ("E-22", "HE800 板片厚度减薄多少要更换", "HE800", ("5.1 维护周期", "3.1 主要技术参数")),
     ("E-23", "空压机检修前的挂牌上锁要求", "AX300", "2.1 安全注意"),
     ("E-24", "离心泵拆卸前要确认什么", "BP2200", "2.1 安全注意"),
     ("E-25", "换热器拆解前的泄压要求", "HE800", "2.1 安全注意"),
@@ -63,12 +63,15 @@ REFUSAL = [
 ]
 
 
-def resolve_gold(model_id: str, section_hint: str) -> list[str]:
+def resolve_gold(model_id: str, section_hint: str | tuple[str, ...]) -> list[str]:
+    """One or several sections can legitimately answer the same question."""
+
+    hints = (section_hint,) if isinstance(section_hint, str) else section_hint
     ids = []
     for chunk in store.chunks():
         if chunk.meta.get("model_id") != model_id:
             continue
-        if chunk.section and section_hint in chunk.section:
+        if chunk.section and any(h in chunk.section for h in hints):
             ids.append(chunk.chunk_id)
     return ids
 

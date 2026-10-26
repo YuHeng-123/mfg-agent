@@ -10,6 +10,19 @@ def recall_at_k(retrieved: list[str], gold: list[str], k: int) -> float:
     return len(top & set(gold)) / len(gold)
 
 
+def hit_at_k(retrieved: list[str], gold: list[str], k: int) -> float:
+    """1.0 if any gold paragraph is in the top k.
+
+    Different from recall_at_k on purpose: when a question has two acceptable
+    answers, hitting one of them is a success, but set-recall would score 0.5.
+    The equipment set has such questions, so both numbers get reported.
+    """
+
+    if not gold:
+        return 0.0
+    return 1.0 if set(retrieved[:k]) & set(gold) else 0.0
+
+
 def reciprocal_rank(retrieved: list[str], gold: list[str]) -> float:
     gold_set = set(gold)
     for rank, chunk_id in enumerate(retrieved, start=1):

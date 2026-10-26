@@ -1,0 +1,487 @@
+{
+  "meta": {
+    "generated_at": "2026-10-26T20:33:26",
+    "commit": "6ceb754",
+    "provider": "stub",
+    "python": "3.13.14",
+    "domains": [
+      "equipment",
+      "compliance"
+    ],
+    "settings": {
+      "evidence_min_terms": 3,
+      "evidence_min_mass": 2.5,
+      "evidence_min_hits": 2,
+      "top_k": 5,
+      "max_steps": 6,
+      "demo_now": "2026-10-24 12:40"
+    },
+    "code": {
+      "core_lines": 1590,
+      "domains_lines": 1301,
+      "app_lines": 195,
+      "scripts_lines": 1292,
+      "tests_lines": 600,
+      "core_share_of_logic": 0.55
+    },
+    "elapsed_s": 2.11
+  },
+  "equipment": {
+    "corpus": {
+      "chunks": 48,
+      "tools": [
+        "create_ticket_draft",
+        "get_device_state",
+        "get_ticket_history",
+        "search_manual"
+      ]
+    },
+    "samples": 32,
+    "retrieval": {
+      "items": [
+        {
+          "id": "E-01",
+          "recall@1": 0.5,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "mrr": 1.0,
+          "top1": "AX300_manual#p3#s08#c01",
+          "no_filter_other_model": false
+        },
+        {
+          "id": "E-02",
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "mrr": 1.0,
+          "top1": "AX300_manual#p3#s07#c01",
+          "no_filter_other_model": false
+        },
+        {
+          "id": "E-03",
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "mrr": 1.0,
+          "top1": "AX300_manual#p4#s09#c01",
+          "no_filter_other_model": false
+        },
+        {
+          "id": "E-04",
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "mrr": 1.0,
+          "top1": "AX300_manual#p4#s10#c01",
+          "no_filter_other_model": false
+        },
+        {
+          "id": "E-05",
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "mrr": 1.0,
+          "top1": "AX300_manual#p4#s11#c01",
+          "no_filter_other_model": false
+        },
+        {
+          "id": "E-06",
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "mrr": 1.0,
+          "top1": "BP2200_manual#p3#s07#c01",
+          "no_filter_other_model": false
+        },
+        {
+          "id": "E-07",
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "mrr": 1.0,
+          "top1": "BP2200_manual#p3#s08#c01",
+          "no_filter_other_model": false
+        },
+        {
+          "id": "E-08",
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "mrr": 1.0,
+          "top1": "BP2200_manual#p4#s09#c01",
+          "no_filter_other_model": false
+        },
+        {
+          "id": "E-09",
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "mrr": 1.0,
+          "top1": "BP2200_manual#p4#s10#c01",
+          "no_filter_other_model": false
+        },
+        {
+          "id": "E-10",
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "mrr": 1.0,
+          "top1": "HE800_manual#p3#s09#c01",
+          "no_filter_other_model": false
+        },
+        {
+          "id": "E-11",
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "mrr": 1.0,
+          "top1": "HE800_manual#p3#s08#c01",
+          "no_filter_other_model": false
+        },
+        {
+          "id": "E-12",
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "mrr": 1.0,
+          "top1": "HE800_manual#p4#s10#c01",
+          "no_filter_other_model": false
+        },
+        {
+          "id": "E-13",
+          "recall@1": 0.5,
+          "recall@3": 0.5,
+          "recall@5": 1.0,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "mrr": 1.0,
+          "top1": "AX300_manual#p4#s08#c01",
+          "no_filter_other_model": true
+        },
+        {
+          "id": "E-14",
+          "recall@1": 0.0,
+          "recall@3": 0.0,
+          "recall@5": 1.0,
+          "hit@1": 0.0,
+          "hit@3": 0.0,
+          "mrr": 0.25,
+          "top1": "BP2200_manual#p2#s03#c01",
+          "no_filter_other_model": false
+        },
+        {
+          "id": "E-15",
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "mrr": 1.0,
+          "top1": "BP2200_manual#p4#s09#c01",
+          "no_filter_other_model": false
+        },
+        {
+          "id": "E-16",
+          "recall@1": 0.5,
+          "recall@3": 0.5,
+          "recall@5": 1.0,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "mrr": 1.0,
+          "top1": "HE800_manual#p2#s05#c01",
+          "no_filter_other_model": false
+        },
+        {
+          "id": "E-17",
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "mrr": 1.0,
+          "top1": "AX300_manual#p5#s13#c01",
+          "no_filter_other_model": false
+        },
+        {
+          "id": "E-18",
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "mrr": 1.0,
+          "top1": "BP2200_manual#p4#s12#c01",
+          "no_filter_other_model": false
+        },
+        {
+          "id": "E-19",
+          "recall@1": 0.0,
+          "recall@3": 0.0,
+          "recall@5": 0.0,
+          "hit@1": 0.0,
+          "hit@3": 0.0,
+          "mrr": 0.0,
+          "top1": "HE800_manual#p3#s07#c01",
+          "no_filter_other_model": false
+        },
+        {
+          "id": "E-20",
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "mrr": 1.0,
+          "top1": "AX300_manual#p2#s04#c01",
+          "no_filter_other_model": true
+        },
+        {
+          "id": "E-21",
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "mrr": 1.0,
+          "top1": "BP2200_manual#p2#s04#c01",
+          "no_filter_other_model": false
+        },
+        {
+          "id": "E-22",
+          "recall@1": 0.5,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "mrr": 1.0,
+          "top1": "HE800_manual#p2#s04#c01",
+          "no_filter_other_model": false
+        },
+        {
+          "id": "E-23",
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "mrr": 1.0,
+          "top1": "AX300_manual#p2#s03#c01",
+          "no_filter_other_model": true
+        },
+        {
+          "id": "E-24",
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "mrr": 1.0,
+          "top1": "BP2200_manual#p2#s03#c01",
+          "no_filter_other_model": false
+        },
+        {
+          "id": "E-25",
+          "recall@1": 0.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "hit@1": 0.0,
+          "hit@3": 1.0,
+          "mrr": 0.5,
+          "top1": "HE800_manual#p3#s07#c01",
+          "no_filter_other_model": false
+        }
+      ],
+      "recall@1": 0.8,
+      "recall@3": 0.88,
+      "recall@5": 0.96,
+      "hit@1": 0.88,
+      "hit@3": 0.92,
+      "mrr": 0.91,
+      "model_filter": {
+        "with_filter_top1_gold": 0.88,
+        "without_filter_wrong_model": 0.12,
+        "questions": 25
+      }
+    }
+  },
+  "compliance": {
+    "corpus": {
+      "chunks": 25,
+      "tools": [
+        "check_gaps",
+        "record_gap",
+        "search_internal_doc",
+        "search_standard"
+      ]
+    },
+    "samples": 20,
+    "gaps": {
+      "items": [
+        {
+          "id": "C-01",
+          "type": "gap_exists",
+          "pred": [
+            "G-01",
+            "G-02",
+            "G-06"
+          ],
+          "gold": [
+            "G-01",
+            "G-02",
+            "G-06"
+          ],
+          "hit": 3
+        },
+        {
+          "id": "C-02",
+          "type": "gap_exists",
+          "pred": [
+            "G-03"
+          ],
+          "gold": [
+            "G-03"
+          ],
+          "hit": 1
+        },
+        {
+          "id": "C-03",
+          "type": "gap_exists",
+          "pred": [
+            "G-04"
+          ],
+          "gold": [
+            "G-04"
+          ],
+          "hit": 1
+        },
+        {
+          "id": "C-04",
+          "type": "gap_exists",
+          "pred": [
+            "G-05"
+          ],
+          "gold": [
+            "G-05"
+          ],
+          "hit": 1
+        },
+        {
+          "id": "C-05",
+          "type": "gap_exists",
+          "pred": [
+            "G-07"
+          ],
+          "gold": [
+            "G-07"
+          ],
+          "hit": 1
+        },
+        {
+          "id": "C-06",
+          "type": "gap_exists",
+          "pred": [
+            "G-01",
+            "G-02",
+            "G-06"
+          ],
+          "gold": [
+            "G-01",
+            "G-02",
+            "G-06"
+          ],
+          "hit": 3
+        },
+        {
+          "id": "C-07",
+          "type": "missing_doc",
+          "pred": [
+            "G-06"
+          ],
+          "gold": [
+            "G-06"
+          ],
+          "hit": 1
+        },
+        {
+          "id": "C-08",
+          "type": "missing_doc",
+          "pred": [
+            "G-07"
+          ],
+          "gold": [
+            "G-07"
+          ],
+          "hit": 1
+        },
+        {
+          "id": "C-09",
+          "type": "missing_doc",
+          "pred": [
+            "G-01"
+          ],
+          "gold": [
+            "G-01"
+          ],
+          "hit": 1
+        },
+        {
+          "id": "C-10",
+          "type": "no_gap",
+          "pred": [],
+          "gold": [],
+          "hit": 0
+        },
+        {
+          "id": "C-11",
+          "type": "no_gap",
+          "pred": [],
+          "gold": [],
+          "hit": 0
+        },
+        {
+          "id": "C-12",
+          "type": "no_gap",
+          "pred": [],
+          "gold": [],
+          "hit": 0
+        },
+        {
+          "id": "C-13",
+          "type": "no_gap",
+          "pred": [],
+          "gold": [],
+          "hit": 0
+        }
+      ],
+      "gap_recall": 1.0,
+      "gap_precision": 1.0,
+      "false_positives": 0,
+      "no_gap_clean_rate": 1.0,
+      "no_gap_items": 4
+    }
+  }
+}

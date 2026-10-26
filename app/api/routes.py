@@ -81,15 +81,22 @@ def gap_record(req: GapRecordRequest) -> dict:
 def latest_eval() -> dict:
     """The numbers shown in the page footer come from a real report file."""
 
-    # Ablation reports live in the same folder but have a different shape; the
-    # footer strip only wants full evaluation runs (filename starts with a date).
+    # The footer strip wants a *complete* run. Ablation files and partial runs
+    # (--stage retrieve) live in the same folder and have a different shape, so
+    # pick the newest file that actually carries both halves.
     files = sorted(
         f for f in REPORTS_DIR.glob("*.json") if f.name[:8].isdigit() and not f.name.startswith("ablation")
     )
-    if not files:
+    path = None
+    data: dict = {}
+    for candidate in reversed(files):
+        payload = json.loads(candidate.read_text(encoding="utf-8"))
+        eq_ok = "retrieval" in payload.get("equipment", {}) and "answer" in payload.get("equipment", {})
+        if eq_ok:
+            path, data = candidate, payload
+            break
+    if path is None:
         return {"available": False}
-    path = files[-1]
-    data = json.loads(path.read_text(encoding="utf-8"))
     out: dict = {
         "available": True,
         "file": path.name,
@@ -98,7 +105,7 @@ def latest_eval() -> dict:
         "code": data["meta"]["code"],
     }
     eq = data.get("equipment", {})
-    if "retrieval" in eq:
+    if "retrieval" in eq and "answer" in eq:
         out["equipment"] = {
             "recall@1": eq["retrieval"]["recall@1"],
             "recall@5": eq["retrieval"]["recall@5"],
@@ -107,7 +114,7 @@ def latest_eval() -> dict:
             "over_refusal": eq["answer"]["rates"]["over_refusal"],
         }
     cp = data.get("compliance", {})
-    if "gaps" in cp:
+    if "gaps" in cp and "answer" in cp:
         out["compliance"] = {
             "gap_recall": cp["gaps"]["gap_recall"],
             "gap_precision": cp["gaps"]["gap_precision"],

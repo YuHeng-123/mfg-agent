@@ -19,6 +19,10 @@ def _equipment(block: dict) -> None:
             f"  Recall@1 {_pct(r['recall@1'])}   Recall@3 {_pct(r['recall@3'])}   "
             f"Recall@5 {_pct(r['recall@5'])}   MRR {r['mrr']:.3f}"
         )
+        print(
+            f"  Hit@1    {_pct(r['hit@1'])}   Hit@3    {_pct(r['hit@3'])}"
+            "   （命中任一可接受段落，多答案题不会被判半分）"
+        )
         f = r["model_filter"]
         print(f"  A/B  开启过滤 top1 命中 gold {_pct(f['with_filter_top1_gold'])}")
         print(
