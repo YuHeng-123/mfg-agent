@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
 from core.config import ROOT
 from core.types import Chunk
@@ -20,6 +21,15 @@ class ComplianceDomain(Domain):
 
     def load_chunks(self) -> list[Chunk]:
         return list(store.chunks())
+
+    def index(self):
+        return store.index()
+
+    def sources(self) -> list[Path]:
+        return [
+            *sorted(store.STANDARD_DIR.glob("*.md")),
+            *sorted(store.INTERNAL_DIR.glob("*.md")),
+        ]
 
     def tools(self) -> dict[str, Tool]:
         return {

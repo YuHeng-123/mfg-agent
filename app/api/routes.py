@@ -40,6 +40,13 @@ class GapRecordRequest(BaseModel):
 def ask_endpoint(req: AskRequest) -> dict:
     if req.domain not in available():
         raise HTTPException(status_code=404, detail=f"unknown domain: {req.domain}")
+    # An empty corpus produces refusals that look like a retrieval problem. Say
+    # which files are missing instead of answering "I don't know" 52 times.
+    from app.boot import issues_for
+
+    problems = issues_for(req.domain)
+    if problems:
+        raise HTTPException(status_code=503, detail="；".join(problems))
     result = run_ask(
         req.domain,
         req.query,
@@ -186,11 +193,18 @@ def latest_eval() -> dict:
 
 @router.get("/healthz")
 def healthz() -> dict:
+    from app.boot import health
+
+    h = health()
     return {
-        "status": "ok",
+        "status": "ok" if h["index_ready"] else "degraded",
         "provider": settings.provider,
         "real_provider_ready": settings.real_provider_ready,
         "domains": available(),
+        "index_ready": h["index_ready"],
+        "warm_ms": h["warm_ms"],
+        "corpus": h["domains"],
+        "issues": h["issues"],
         "version": "0.1.0",
     }
 

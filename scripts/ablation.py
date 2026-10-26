@@ -119,7 +119,7 @@ def chunk_models() -> dict[str, str]:
 
 @contextmanager
 def _chain(*ctxs):
-    entered = [c.__enter__() for c in ctxs]
+    [c.__enter__() for c in ctxs]
     try:
         yield
     finally:
@@ -158,12 +158,17 @@ def run_case(name: str, ctx) -> dict:
                     fabricated += 1
 
             want_model = item.get("model_id")
+            # A question that names two models ("AX310 和 AX300 有什么差别") may
+            # legitimately cite either. Counting the second one as a cross-model
+            # error would inflate the number on a question whose gold is about
+            # the difference between them.
+            acceptable = {want_model, *item.get("accept_models", [])}
             if want_model and want_model.upper() in item["q"].upper():
                 for cite in result["citations"]:
                     if cite["chunk_id"] not in models:
                         continue
                     doc_cites += 1
-                    if models[cite["chunk_id"]] not in (None, want_model):
+                    if models[cite["chunk_id"]] not in (None, *acceptable):
                         wrong_model += 1
 
     return {

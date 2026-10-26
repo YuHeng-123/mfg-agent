@@ -78,7 +78,7 @@ def confusion(should_answer: list[bool], did_answer: list[bool]) -> dict[str, in
     """2x2 over (should answer?) x (did answer?)."""
 
     cells = {"tp": 0, "fp": 0, "tn": 0, "fn": 0}
-    for should, did in zip(should_answer, did_answer):
+    for should, did in zip(should_answer, did_answer, strict=False):
         if should and did:
             cells["tp"] += 1
         elif should and not did:

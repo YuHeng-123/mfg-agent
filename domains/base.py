@@ -14,8 +14,10 @@ abstraction has failed.
 from __future__ import annotations
 
 import importlib
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Any, Callable, Protocol, runtime_checkable
+from pathlib import Path
+from typing import Any, Protocol, runtime_checkable
 
 from core.types import Chunk, ToolResult
 
@@ -72,6 +74,12 @@ class Domain(Protocol):
     label: str
 
     def load_chunks(self) -> list[Chunk]: ...
+
+    def index(self) -> Any:
+        """The domain's own index. Built on demand, warmed at startup."""
+
+    def sources(self) -> list[Path]:
+        """Files the startup self-check looks for."""
 
     def tools(self) -> dict[str, Tool]: ...
 

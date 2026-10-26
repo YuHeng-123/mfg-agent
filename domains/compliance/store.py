@@ -2,10 +2,8 @@
 
 from __future__ import annotations
 
-import json
 from datetime import datetime
 from functools import lru_cache
-from pathlib import Path
 
 from core.config import DATA_DIR
 from core.rag.index import Index
@@ -87,9 +85,8 @@ def recorded(status: str | None = None, include_drafts: bool = True) -> list[dic
 
 def clause_chunk(section_hint: str) -> Chunk | None:
     for chunk in chunks():
-        if chunk.meta.get("doc_type") == "standard" and chunk.section:
-            if section_hint in chunk.section:
-                return chunk
+        if chunk.meta.get("doc_type") == "standard" and chunk.section and section_hint in chunk.section:
+            return chunk
     return None
 
 

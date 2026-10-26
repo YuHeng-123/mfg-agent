@@ -28,7 +28,7 @@ class Chunk:
     section: str | None = None
     meta: dict[str, Any] = field(default_factory=dict)
 
-    def cite(self, snippet_len: int = 300) -> "Citation":
+    def cite(self, snippet_len: int = 300) -> Citation:
         snippet = self.text[:snippet_len]
         if len(self.text) > snippet_len:
             snippet += "…"

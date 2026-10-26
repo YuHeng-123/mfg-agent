@@ -20,7 +20,7 @@ from core.guard import citation as citation_guard
 from core.guard import evidence as evidence_guard
 from core.guard import safety as safety_guard
 from core.guard.safety import SafetyHit
-from core.types import Answer, Claim, Citation, Refusal, ToolResult, TraceStep
+from core.types import Answer, Citation, Refusal, ToolResult, TraceStep
 from domains.base import Domain, Tool, load_domain
 
 RE_CODE = re.compile(r"\b[A-Z]{1,2}\d{2,3}\b")
@@ -145,28 +145,36 @@ def _plan(domain: Domain, question: str) -> tuple[list[Tool], str]:
     return chosen, note
 
 
-def _run_parallel(
-    tools: list[Tool], question: str, context: dict, trace: list[TraceStep], start_step: int
-) -> list[tuple[str, ToolResult]]:
-    clauses = _decompose(question) if settings.decompose_clauses else []
-    jobs: list[tuple[Tool, dict, str]] = []
-    for tool in tools:
-        args = _build_args(tool, question, context)
-        if args is None:
-            trace.append(
-                TraceStep(step=start_step, tool=tool.name, ok=False, note="参数不满足，跳过")
-            )
-            continue
-        jobs.append((tool, args, ""))
-        # Only the primary retrieval is decomposed. Re-running a ticket lookup
-        # once per clause would multiply the same rows; re-running it on the
-        # original question is what a human would do.
-        if tool.primary and tool.read_only and clauses:
-            for clause in clauses:
-                sub = _build_args(tool, clause, context)
-                if sub is not None:
-                    jobs.append((tool, sub, clause))
+SCOPE_KEYS = ("model_id", "device_id", "fault_code")
 
+
+def _scope_from(outputs: list[tuple[str, ToolResult]], tools: list[Tool]) -> dict:
+    """Entity scope the primary retrieval resolved from the whole question.
+
+    A clause is not a question. "AX300 报 E05 怎么处置，备件是什么" splits into
+    "备件是什么", which names no model at all — retrieving it without the scope
+    resolved from the full string searches every manual in the library and hands
+    the answer an AX310 spare-part table. Clause retrieval must inherit the
+    scope, not re-derive it.
+    """
+
+    primary = {t.name for t in tools if t.primary}
+    scope: dict = {}
+    for name, result in outputs:
+        if name not in primary:
+            continue
+        for key in SCOPE_KEYS:
+            value = (result.data or {}).get(key)
+            if value and key not in scope:
+                scope[key] = value
+    return scope
+
+
+def _run_parallel(
+    jobs: list[tuple[Tool, dict, str]],
+    trace: list[TraceStep],
+    start_step: int,
+) -> list[tuple[str, ToolResult]]:
     def work(tool: Tool, args: dict) -> ToolResult:
         if settings.tool_latency_ms:
             time.sleep(settings.tool_latency_ms / 1000)
@@ -174,28 +182,37 @@ def _run_parallel(
 
     outputs: list[tuple[str, ToolResult]] = []
     with ThreadPoolExecutor(max_workers=max(len(jobs), 1)) as pool:
-        futures = [(tool, pool.submit(work, tool, args), clause) for tool, args, clause in jobs]
-        for tool, future, clause in futures:
+        futures = [(tool, pool.submit(work, tool, args), note) for tool, args, note in jobs]
+        for tool, future, note in futures:
             try:
                 result = future.result(timeout=settings.tool_timeout_s + settings.tool_latency_ms / 1000)
             except Exception as exc:  # timeout or crash: record it, keep going
                 result = ToolResult(ok=False, error=f"{type(exc).__name__}: {exc}")
             outputs.append((tool.name, result))
-            note = result.error or result.note or ""
-            if clause:
-                note = f"子句检索「{clause}」" + (f"｜{note}" if note else "")
+            suffix = result.error or result.note or ""
             trace.append(
                 TraceStep(
                     step=start_step,
                     tool=tool.name,
-                    args={k: v for k, v in (result.data or {}).items() if k in ("model_id", "device_id", "fault_code")},
+                    args={k: v for k, v in (result.data or {}).items() if k in SCOPE_KEYS},
                     ok=result.ok,
                     elapsed_ms=result.elapsed_ms,
                     hit_chunk_ids=[c.chunk_id for c in result.citations],
-                    note=note,
+                    note=f"{note}{'｜' if note and suffix else ''}{suffix}",
                 )
             )
     return outputs
+
+
+def _build_jobs(tools: list[Tool], question: str, context: dict, trace: list[TraceStep]) -> list[tuple[Tool, dict, str]]:
+    jobs: list[tuple[Tool, dict, str]] = []
+    for tool in tools:
+        args = _build_args(tool, question, context)
+        if args is None:
+            trace.append(TraceStep(step=3, tool=tool.name, ok=False, note="参数不满足，跳过"))
+            continue
+        jobs.append((tool, args, ""))
+    return jobs
 
 
 def _collect_citations(outputs: list[tuple[str, ToolResult]]) -> list[Citation]:
@@ -251,7 +268,26 @@ def ask(domain_name: str, question: str, context: dict | None = None) -> AskResu
         )
 
     # step 3 — parallel tool execution
-    outputs = _run_parallel(tools, question, context, trace, start_step=3)
+    outputs = _run_parallel(_build_jobs(tools, question, context, trace), trace, start_step=3)
+
+    # step 3b — clause retrieval, in a second wave because it needs the scope
+    # the first wave resolved. Only the primary retrieval is decomposed: running
+    # a ticket lookup once per clause would multiply the same rows.
+    if settings.decompose_clauses:
+        clauses = _decompose(question)
+        if clauses:
+            scope = {k: v for k, v in _scope_from(outputs, tools).items() if not context.get(k)}
+            ctx = {**context, **scope}
+            extra: list[tuple[Tool, dict, str]] = []
+            for tool in tools:
+                if not (tool.primary and tool.read_only):
+                    continue
+                for clause in clauses:
+                    args = _build_args(tool, clause, ctx)
+                    if args is not None:
+                        extra.append((tool, args, f"子句检索「{clause}」"))
+            outputs += _run_parallel(extra, trace, start_step=3)
+
     # Tools may report structured findings (a gap list, a suspected cause). The
     # core does not interpret them, it only carries them to the caller.
     findings: list[dict] = []

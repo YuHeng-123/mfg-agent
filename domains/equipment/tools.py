@@ -9,11 +9,9 @@ from __future__ import annotations
 
 import dataclasses
 import functools
-import json
 import re
 import time
 from datetime import datetime
-from pathlib import Path
 
 from core.store import records
 from core.types import Citation, EvidenceStats, ToolResult

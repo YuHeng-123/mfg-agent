@@ -26,7 +26,7 @@ def test_trace_records_three_tools_with_timings():
     tools = [t for t in result.trace if t.tool]
     assert len(tools) >= 3
     assert all(t.elapsed_ms >= 0 for t in tools)
-    assert any("search_manual" == t.tool for t in tools)
+    assert any(t.tool == "search_manual" for t in tools)
 
 
 def test_sensor_excursion_is_reported():

@@ -6,13 +6,14 @@ Then: http://127.0.0.1:8000/healthz  and  http://127.0.0.1:8000/
 
 from __future__ import annotations
 
-from pathlib import Path
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.api.routes import router
+from app.boot import warm
 from core.config import ROOT, settings
 
 WEB_DIR = ROOT / "web"
@@ -24,6 +25,22 @@ app = FastAPI(
 )
 
 app.include_router(router)
+
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    state = warm()
+    print(
+        f"[boot] 索引预热 {state['warm_ms']} ms  "
+        + "  ".join(f"{k}:{v['chunks']}段" for k, v in state["domains"].items())
+        + (f"  ⚠ {len(state['issues'])} 项问题" if state["issues"] else "  自检通过")
+    )
+    for issue in state["issues"]:
+        print(f"[boot]   {issue}")
+    yield
+
+
+app.router.lifespan_context = lifespan
 
 if WEB_DIR.is_dir():
     app.mount("/static", StaticFiles(directory=str(WEB_DIR)), name="static")

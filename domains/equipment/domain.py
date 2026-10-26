@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
 from core.config import ROOT
 from core.types import Chunk
@@ -20,6 +21,19 @@ class EquipmentDomain(Domain):
 
     def load_chunks(self) -> list[Chunk]:
         return list(store.chunks())
+
+    def index(self):
+        return store.index()
+
+    def sources(self) -> list[Path]:
+        """Files the startup self-check looks for. Missing ones are reported, not crashed on."""
+
+        return [
+            store.REGISTRY,
+            store.TICKET_CSV,
+            *sorted(store.MAN_DIR.glob("*.pdf")),
+            *sorted(store.SENSOR_DIR.glob("*.csv")),
+        ]
 
     def tools(self) -> dict[str, Tool]:
         return {

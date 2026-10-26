@@ -232,7 +232,7 @@ def run_answers(items: list[dict], domain: str) -> dict:
     cells = metrics.confusion(should, did)
     rates = metrics.rates(cells)
     refuse_items = [d for d in detail if d["type"] in ("refuse", "safety")]
-    avg = lambda xs: sum(xs) / len(xs) if xs else 0.0  # noqa: E731
+    avg = lambda xs: sum(xs) / len(xs) if xs else 0.0
     return {
         "detail": detail,
         "citation_precision": avg(precisions),

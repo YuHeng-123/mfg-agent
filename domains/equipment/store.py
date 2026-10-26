@@ -11,7 +11,6 @@ import csv
 import json
 import re
 from functools import lru_cache
-from pathlib import Path
 
 from core.config import DATA_DIR
 from core.rag.index import Index

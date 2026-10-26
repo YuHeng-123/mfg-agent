@@ -15,8 +15,8 @@ import time
 from core.rag.tokenize import tokenize
 from core.types import Citation, EvidenceStats, ToolResult
 from domains.compliance import requirements as cov
-from domains.compliance.rules import OUT_OF_SCOPE
 from domains.compliance import store
+from domains.compliance.rules import OUT_OF_SCOPE
 
 # Gap findings must outrank ordinary retrieval hits in the answer, because that is
 # what the user asked for. Scores are internal ranking only, never shown.

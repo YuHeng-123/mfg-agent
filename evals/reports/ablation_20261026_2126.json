@@ -1,0 +1,89 @@
+{
+  "meta": {
+    "generated_at": "2026-10-26T21:26:32",
+    "provider": "stub",
+    "note": "无 API key，未做模型质量对照；本表只测机制的作用"
+  },
+  "rows": [
+    {
+      "case": "full（三道闸全开）",
+      "answered_when_should_refuse": 0,
+      "refuse_samples": 14,
+      "refused_when_answerable": 0,
+      "answerable_samples": 58,
+      "unsourced_claims": 0,
+      "claims": 95,
+      "wrong_model_citations": 0,
+      "doc_citations": 208,
+      "hallucination_proxy": 0.0,
+      "unsourced_ratio": 0.0,
+      "over_refusal": 0.0,
+      "wrong_model_ratio": 0.0,
+      "fabricated_delivered": 0
+    },
+    {
+      "case": "关掉证据闸",
+      "answered_when_should_refuse": 5,
+      "refuse_samples": 14,
+      "refused_when_answerable": 0,
+      "answerable_samples": 58,
+      "unsourced_claims": 0,
+      "claims": 102,
+      "wrong_model_citations": 0,
+      "doc_citations": 208,
+      "hallucination_proxy": 0.35714285714285715,
+      "unsourced_ratio": 0.0,
+      "over_refusal": 0.0,
+      "wrong_model_ratio": 0.0,
+      "fabricated_delivered": 0
+    },
+    {
+      "case": "关掉型号过滤",
+      "answered_when_should_refuse": 0,
+      "refuse_samples": 14,
+      "refused_when_answerable": 0,
+      "answerable_samples": 58,
+      "unsourced_claims": 0,
+      "claims": 102,
+      "wrong_model_citations": 89,
+      "doc_citations": 245,
+      "hallucination_proxy": 0.0,
+      "unsourced_ratio": 0.0,
+      "over_refusal": 0.0,
+      "wrong_model_ratio": 0.363265306122449,
+      "fabricated_delivered": 0
+    },
+    {
+      "case": "模型编造引用 · 有校验",
+      "answered_when_should_refuse": 0,
+      "refuse_samples": 14,
+      "refused_when_answerable": 58,
+      "answerable_samples": 58,
+      "unsourced_claims": 116,
+      "claims": 116,
+      "wrong_model_citations": 0,
+      "doc_citations": 208,
+      "hallucination_proxy": 0.0,
+      "unsourced_ratio": 1.0,
+      "over_refusal": 1.0,
+      "wrong_model_ratio": 0.0,
+      "fabricated_delivered": 0
+    },
+    {
+      "case": "模型编造引用 · 无校验",
+      "answered_when_should_refuse": 0,
+      "refuse_samples": 14,
+      "refused_when_answerable": 0,
+      "answerable_samples": 58,
+      "unsourced_claims": 0,
+      "claims": 116,
+      "wrong_model_citations": 0,
+      "doc_citations": 208,
+      "hallucination_proxy": 0.0,
+      "unsourced_ratio": 0.0,
+      "over_refusal": 0.0,
+      "wrong_model_ratio": 0.0,
+      "fabricated_delivered": 116
+    }
+  ]
+}

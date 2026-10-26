@@ -1,0 +1,23 @@
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+extend-exclude = ["data", "evals/reports", ".pytest_cache"]
+
+[tool.ruff.lint]
+# E/F are the floor. I keeps imports sorted, B and SIM catch the mistakes that
+# actually bite in this codebase (a mutable default, a collapsible branch), RUF
+# catches unused noqa - which is how a suppression turns into a lie.
+select = ["E", "F", "W", "I", "B", "SIM", "UP", "RUF"]
+ignore = [
+  "BLE001",  # 工具崩溃不能拖垮整次提问，loop.py 里几处 except Exception 是故意的
+  "B008",    # FastAPI 依赖注入就是在参数默认值里调用函数
+  "E731",    # 评测脚本里的 avg = lambda 比 def 好读
+  # 这是个中文项目：全角标点、中文注释会被 RUF001/002/003 当成"易混淆字符"误报
+  "RUF001",
+  "RUF002",
+  "RUF003",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"scripts/*" = ["I001"]
+"tests/*" = ["SIM102"]

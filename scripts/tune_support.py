@@ -52,7 +52,7 @@ def measure(items: list[dict]) -> dict:
         (multi if item["type"] == "multihop" else single).append(
             metrics.citation_coverage(cited, gold)
         )
-    avg = lambda xs: round(sum(xs) / len(xs) * 100, 1) if xs else 0.0  # noqa: E731
+    avg = lambda xs: round(sum(xs) / len(xs) * 100, 1) if xs else 0.0
     return {"precision": avg(precisions), "hit": avg(hits), "single": avg(single), "multi": avg(multi)}
 
 
@@ -72,7 +72,11 @@ def apply_config(env: dict) -> None:
 
 def main() -> int:
     print(f"训练 {len(TRAIN)} 条 / 测试 {len(TEST)} 条\n")
-    print(f"{'配置':<24}{'精(训)':>8}{'命(训)':>8}{'单(训)':>8}{'多(训)':>8}   |{'精(测)':>8}{'命(测)':>8}{'单(测)':>8}{'多(测)':>8}")
+    train_cols = ["精(训)", "命(训)", "单(训)", "多(训)"]
+    test_cols = ["精(测)", "命(测)", "单(测)", "多(测)"]
+    head = "配置".ljust(24) + "".join(t.rjust(8) for t in train_cols)
+    head += "   |" + "".join(t.rjust(8) for t in test_cols)
+    print(head)
     for label, env in CONFIGS:
         apply_config(env)
         tr, te = measure(TRAIN), measure(TEST)

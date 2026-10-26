@@ -70,7 +70,7 @@ def main() -> None:
         print(f"{label:46s}{tr['recall@1'] * 100:>9.1f}%{tr['hit@1'] * 100:>11.1f}%{tr['recall@5'] * 100:>10.1f}%")
         results.append((cfg, tr))
 
-    best_cfg, best_tr = max(results, key=lambda pair: (pair[1]["recall@1"], pair[1]["hit@1"]))
+    best_cfg, _ = max(results, key=lambda pair: (pair[1]["recall@1"], pair[1]["hit@1"]))
     print("\n按训练集选定：", best_cfg)
     ix = Index(chunks, **best_cfg)
     te = evaluate(ix, test)

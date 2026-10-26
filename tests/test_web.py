@@ -22,7 +22,10 @@ def test_index_page_is_served(client: TestClient):
 
 
 def test_ask_over_http_returns_claims_with_citations(client: TestClient):
-    res = client.post("/api/ask", json={"domain": "equipment", "query": "3 号线空压机报 E05，排气温度 118℃，怎么处理？"})
+    res = client.post(
+        "/api/ask",
+        json={"domain": "equipment", "query": "3 号线空压机报 E05，排气温度 118℃，怎么处理？"},
+    )
     body = res.json()
     assert res.status_code == 200
     assert body["refusal"] is None
@@ -88,6 +91,34 @@ def test_record_state_machine_rejects_backwards_moves(client: TestClient, tmp_pa
     assert client.post(f"/api/records/{rid}/confirm").status_code == 409
     assert client.post(f"/api/records/{rid}/close").status_code == 409
     assert client.post("/api/records/99999/confirm").status_code == 404
+
+
+def test_healthz_reports_a_warm_index(client: TestClient):
+    body = client.get("/healthz").json()
+    assert body["status"] == "ok"
+    assert body["index_ready"] is True
+    assert body["issues"] == []
+    assert body["corpus"]["equipment"]["chunks"] > 0
+    assert body["corpus"]["compliance"]["chunks"] > 0
+
+
+def test_startup_self_check_names_the_missing_file(monkeypatch):
+    """An empty corpus and a broken retrieval look identical from the outside.
+
+    Saying which file is absent is the whole point of the self-check.
+    """
+
+    from pathlib import Path
+
+    from app import boot
+    from domains.base import load_domain
+
+    domain = load_domain("equipment")
+    monkeypatch.setattr(domain, "sources", lambda: [Path("data/equipment/manuals/nope.pdf")])
+    state = boot.warm()
+    assert any("equipment" in i and "nope.pdf" in i for i in state["issues"])
+    assert state["ready"] is False
+    boot.warm()  # put the global state back for the rest of the suite
 
 
 def test_eval_endpoint_quotes_a_real_report(client: TestClient):

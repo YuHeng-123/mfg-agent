@@ -195,7 +195,7 @@ class OpenAICompatProvider:
         import httpx
 
         evidence = []
-        for tool_name, result in tool_outputs:
+        for _, result in tool_outputs:
             for cite in result.citations:
                 evidence.append(
                     {
