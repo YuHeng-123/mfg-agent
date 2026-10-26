@@ -1,0 +1,110 @@
+{
+  "AX300": {
+    "E01": {
+      "name": "排气压力过高",
+      "typical_hours": 3
+    },
+    "E02": {
+      "name": "排气压力过低",
+      "typical_hours": 2
+    },
+    "E05": {
+      "name": "排气温度过高",
+      "typical_hours": 4
+    },
+    "E06": {
+      "name": "油温过高",
+      "typical_hours": 4
+    },
+    "E07": {
+      "name": "油压过低",
+      "typical_hours": 5
+    },
+    "E08": {
+      "name": "主机振动超标",
+      "typical_hours": 8
+    },
+    "E09": {
+      "name": "电流过载",
+      "typical_hours": 4
+    },
+    "E05x": {
+      "name": "排气温度过高",
+      "typical_hours": 6
+    }
+  },
+  "AX310": {
+    "E05": {
+      "name": "排气温度过高",
+      "typical_hours": 4
+    },
+    "E06": {
+      "name": "油温过高",
+      "typical_hours": 4
+    },
+    "E08": {
+      "name": "主机振动超标",
+      "typical_hours": 7
+    },
+    "E09": {
+      "name": "电流过载",
+      "typical_hours": 4
+    }
+  },
+  "BP2200": {
+    "P01": {
+      "name": "出口压力不足",
+      "typical_hours": 4
+    },
+    "P02": {
+      "name": "流量不足",
+      "typical_hours": 3
+    },
+    "P03": {
+      "name": "电机过载",
+      "typical_hours": 5
+    },
+    "P04": {
+      "name": "汽蚀",
+      "typical_hours": 3
+    },
+    "P05": {
+      "name": "机械密封泄漏",
+      "typical_hours": 5
+    },
+    "P06": {
+      "name": "轴承温度高",
+      "typical_hours": 4
+    },
+    "P07": {
+      "name": "振动超标",
+      "typical_hours": 6
+    },
+    "P09": {
+      "name": "联轴器打滑",
+      "typical_hours": 5
+    }
+  },
+  "HE800": {
+    "H01": {
+      "name": "换热效率下降",
+      "typical_hours": 8
+    },
+    "H02": {
+      "name": "压降升高",
+      "typical_hours": 7
+    },
+    "H03": {
+      "name": "外漏",
+      "typical_hours": 5
+    },
+    "H04": {
+      "name": "内漏",
+      "typical_hours": 9
+    },
+    "H05": {
+      "name": "板片腐蚀穿孔",
+      "typical_hours": 10
+    }
+  }
+}

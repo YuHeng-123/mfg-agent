@@ -1,0 +1,92 @@
+[
+  {
+    "device_id": "AC-300-01",
+    "model_id": "AX300",
+    "name": "1 号空压机",
+    "line": "3 号线动力站",
+    "location": "动力站东侧",
+    "manual": "AX300_manual",
+    "thresholds": {
+      "exhaust_temp_c": 105,
+      "vibration_mm_s": 4.5,
+      "current_a": 118
+    }
+  },
+  {
+    "device_id": "AC-300-02",
+    "model_id": "AX300",
+    "name": "2 号空压机",
+    "line": "3 号线动力站",
+    "location": "动力站东侧",
+    "manual": "AX300_manual",
+    "thresholds": {
+      "exhaust_temp_c": 105,
+      "vibration_mm_s": 4.5,
+      "current_a": 118
+    }
+  },
+  {
+    "device_id": "AC-300-03",
+    "model_id": "AX300",
+    "name": "3 号空压机",
+    "line": "3 号线动力站",
+    "location": "动力站西侧",
+    "manual": "AX300_manual",
+    "thresholds": {
+      "exhaust_temp_c": 105,
+      "vibration_mm_s": 4.5,
+      "current_a": 118
+    }
+  },
+  {
+    "device_id": "AC-310-01",
+    "model_id": "AX310",
+    "name": "1 号空压机",
+    "line": "4 号线动力站",
+    "location": "动力站北侧",
+    "manual": "AX310_manual",
+    "thresholds": {
+      "exhaust_temp_c": 108,
+      "vibration_mm_s": 4.0,
+      "current_a": 110
+    }
+  },
+  {
+    "device_id": "PU-2200-01",
+    "model_id": "BP2200",
+    "name": "1 号工艺泵",
+    "line": "2 号线输送单元",
+    "location": "泵房 A 列",
+    "manual": "BP2200_manual",
+    "thresholds": {
+      "vibration_mm_s": 4.5,
+      "bearing_temp_c": 80,
+      "current_a": 96
+    }
+  },
+  {
+    "device_id": "PU-2200-02",
+    "model_id": "BP2200",
+    "name": "2 号工艺泵",
+    "line": "2 号线输送单元",
+    "location": "泵房 A 列",
+    "manual": "BP2200_manual",
+    "thresholds": {
+      "vibration_mm_s": 4.5,
+      "bearing_temp_c": 80,
+      "current_a": 96
+    }
+  },
+  {
+    "device_id": "HX-800-01",
+    "model_id": "HE800",
+    "name": "1 号板式换热器",
+    "line": "1 号线换热单元",
+    "location": "换热区",
+    "manual": "HE800_manual",
+    "thresholds": {
+      "pressure_drop_mpa": 0.08,
+      "outlet_temp_c": 45
+    }
+  }
+]

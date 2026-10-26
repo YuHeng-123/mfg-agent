@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>设备知识 Agent · 取用与体检</title>
+<style>
+  :root{
+    --bg:#f7f7f5; --panel:#ffffff; --line:#e4e3df; --line2:#d3d1c7;
+    --ink:#1f1f1d; --ink2:#5f5e5a; --ink3:#8a8880;
+    --blue:#185fa5; --blue-bg:#e6f1fb;
+    --amber:#854f0b; --amber-bg:#faeeda;
+    --red:#a32d2d; --red-bg:#fcebeb;
+    --green:#3b6d11; --green-bg:#eaf3de;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+       font:14px/1.6 system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif}
+  button{font:inherit;cursor:pointer}
+
+  header{display:flex;align-items:center;gap:12px;padding:10px 16px;flex-wrap:wrap;row-gap:8px;
+         background:var(--panel);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+  .brand{font-size:15px;font-weight:600;letter-spacing:.2px;white-space:nowrap}
+  .brand small{font-weight:400;color:var(--ink3);font-size:12px;margin-left:6px}
+  .seg{display:flex;border:1px solid var(--line2);border-radius:8px;overflow:hidden;flex:0 0 auto}
+  .seg button{border:0;background:transparent;padding:5px 14px;font-size:13px;color:var(--ink2);white-space:nowrap}
+  .seg button.on{background:var(--blue-bg);color:var(--blue);font-weight:600}
+  .meta{margin-left:auto;font-size:12px;color:var(--ink3);display:flex;gap:14px;white-space:nowrap}
+  .meta b{color:var(--ink2);font-weight:500}
+
+  main{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:14px;
+       padding:14px 18px;align-items:start;max-width:1360px;margin:0 auto}
+  @media (max-width:980px){main{grid-template-columns:minmax(0,1fr)}}
+
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px}
+  .chat{display:flex;flex-direction:column;min-height:calc(100vh - 190px)}
+  .thread{padding:16px;display:flex;flex-direction:column;gap:14px;flex:1}
+
+  .q{align-self:flex-end;max-width:88%;background:var(--blue-bg);color:#0d447c;
+     padding:9px 13px;border-radius:12px 12px 2px 12px;font-size:14px}
+  .a{border-left:2px solid var(--blue);padding-left:13px;display:flex;flex-direction:column;gap:9px}
+  .a .lead{font-size:12px;color:var(--ink3)}
+  .claim{display:flex;gap:9px;align-items:flex-start}
+  .claim .n{flex:0 0 16px;color:var(--ink3);font-size:12px;line-height:1.7}
+  .claim .txt{font-size:14px;flex:1}
+  .chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:5px}
+  .chip{border:1px solid var(--line2);background:#fbfbfa;border-radius:5px;
+        padding:1px 7px;font-size:11.5px;color:var(--blue);font-family:var(--mono)}
+  .chip:hover{background:var(--blue-bg);border-color:var(--blue)}
+
+  .refusal{border-radius:10px;padding:11px 13px;font-size:13.5px;line-height:1.65}
+  .refusal.safety{background:var(--amber-bg);border:1px solid #e6cf9a;color:var(--amber)}
+  .refusal.evidence{background:#f4f4f2;border:1px solid var(--line2);color:var(--ink2)}
+  .refusal .tag{font-size:11px;font-weight:600;letter-spacing:.4px;
+                border:1px solid currentColor;border-radius:4px;padding:0 5px;margin-right:7px}
+  .refusal ul{margin:7px 0 0;padding-left:18px}
+
+  .composer{border-top:1px solid var(--line);padding:11px 14px;display:flex;flex-direction:column;gap:9px}
+  .samples{display:flex;flex-wrap:wrap;gap:6px}
+  .samples button{border:1px solid var(--line2);background:#fbfbfa;color:var(--ink2);
+                  border-radius:999px;padding:3px 11px;font-size:12px}
+  .samples button:hover{border-color:var(--blue);color:var(--blue)}
+  form{display:flex;gap:8px}
+  input[type=text]{flex:1;border:1px solid var(--line2);border-radius:8px;padding:9px 12px;
+                   font:inherit;font-size:14px;background:#fff;color:var(--ink)}
+  input[type=text]:focus{outline:2px solid var(--blue-bg);border-color:var(--blue)}
+  form button{border:0;background:var(--blue);color:#fff;border-radius:8px;padding:0 18px;font-size:14px}
+  form button[disabled]{opacity:.5;cursor:default}
+
+  aside{display:flex;flex-direction:column;gap:14px;position:sticky;top:62px}
+  .ev{padding:13px 14px}
+  .ev h3{margin:0 0 9px;font-size:12px;font-weight:600;color:var(--ink2);
+         display:flex;justify-content:space-between;align-items:baseline}
+  .ev h3 span{font-weight:400;color:var(--ink3);font-size:11px}
+  .card{border:1px solid var(--line);border-radius:9px;padding:9px 10px;margin-bottom:8px;
+        background:#fff;transition:border-color .15s,background .15s}
+  .card:last-child{margin-bottom:0}
+  .card .where{font-family:var(--mono);font-size:11px;color:var(--ink3);
+               display:flex;justify-content:space-between;gap:8px}
+  .card .body{font-size:12.5px;color:var(--ink);margin-top:4px;line-height:1.6;
+              max-height:96px;overflow:auto;white-space:pre-wrap}
+  .card.hl{border-color:var(--blue);background:var(--blue-bg)}
+  .card .num{font-family:var(--mono)}
+  .kv{display:flex;justify-content:space-between;font-size:12.5px;padding:2px 0}
+  .bad{color:var(--red);font-weight:600}
+  .ok{color:var(--green)}
+  .empty{font-size:12.5px;color:var(--ink3)}
+
+  footer.draft{border-top:1px solid var(--line);background:var(--amber-bg);
+               padding:9px 18px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  footer.draft .t{font-size:12.5px;color:var(--amber);flex:1;min-width:220px}
+  footer.draft button{border:1px solid #e6cf9a;background:#fff;color:var(--amber);
+                      border-radius:7px;padding:4px 12px;font-size:12.5px}
+  footer.draft .tag{font-size:11px;font-weight:600;border:1px solid currentColor;
+                    border-radius:4px;padding:0 5px;color:var(--amber)}
+
+  .metrics{max-width:1360px;margin:0 auto 22px;padding:0 18px;display:grid;
+           grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+  .m{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+  .m .k{font-size:11px;color:var(--ink3)}
+  .m .v{font-size:19px;font-weight:600;margin-top:2px}
+  .m .s{font-size:11px;color:var(--ink3);margin-top:1px}
+  .banner{margin:12px 18px;padding:10px 14px;border-radius:10px;background:var(--red-bg);
+          color:var(--red);font-size:13px;display:none}
+  .hint{font-size:11px;color:var(--ink3);margin-top:6px}
+
+  @media (max-width:900px){
+    .meta{display:none}
+    .brand small{display:none}
+    aside{position:static;top:auto}
+    .chat{min-height:auto}
+    .metrics{grid-template-columns:repeat(3,minmax(0,1fr))}
+  }
+  @media (max-width:620px){
+    header{padding:8px 10px;gap:8px}
+    .seg button{padding:4px 9px;font-size:12px}
+    .brand{font-size:14px}
+    main{padding:10px;gap:10px}
+    .thread{padding:12px;gap:11px}
+    .q{font-size:13px;max-width:94%}
+    .claim .txt{font-size:13px}
+    .composer{padding:9px 10px}
+    .samples button{font-size:11.5px;padding:2px 9px}
+    form input{padding:8px 10px;font-size:13px}
+    form button{padding:0 12px;font-size:13px}
+    .metrics{grid-template-columns:repeat(2,minmax(0,1fr));padding:0 10px;gap:8px}
+    .m{padding:8px 10px}
+    .m .v{font-size:17px}
+    footer.draft{padding:8px 10px}
+    .card .body{max-height:none}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">设备知识 Agent <small>取用 · 体检</small></div>
+  <div class="seg" id="seg">
+    <button data-domain="equipment" class="on">设备运维</button>
+    <button data-domain="compliance">文件体检</button>
+  </div>
+  <div class="meta">
+    <span>provider <b id="provider">stub</b></span>
+    <span id="corpus"></span>
+  </div>
+</header>
+
+<div class="banner" id="banner"></div>
+
+<main>
+  <section class="panel chat">
+    <div class="thread" id="thread">
+      <div class="empty">选择下面的示例问题，或直接输入。每条结论都会挂到手册页码或标准条款上。</div>
+    </div>
+    <div class="composer">
+      <div class="samples" id="samples"></div>
+      <form id="form">
+        <input id="q" type="text" autocomplete="off" placeholder="例如：3 号线空压机报 E05，排气温度 118℃，怎么处理？">
+        <button id="send" type="submit">提问</button>
+      </form>
+    </div>
+  </section>
+
+  <aside>
+    <div class="panel ev">
+      <h3>证据 <span id="evcount"></span></h3>
+      <div id="evidence"><div class="empty">提问后在这里显示命中的手册段落、工单与实时参数。</div></div>
+    </div>
+  </aside>
+</main>
+
+<footer class="draft" id="draftbar" hidden></footer>
+<div class="metrics" id="metrics"></div>
+
+<script>
+const SAMPLES = {
+  equipment: [
+    "3 号线空压机报 E05，排气温度 118℃，怎么处理？",
+    "这台泵的轴承型号是多少？",
+    "带电拆开接线盒检查",
+    "空压机安全阀多久校验一次"
+  ],
+  compliance: [
+    "对照新版 7.1.6 组织知识，我们质量手册要改哪几处？",
+    "6.3 变更的策划对现有文件有什么影响",
+    "文件的标识和批准由谁负责",
+    "帮我签一下这份质量手册的批准页"
+  ]
+};
+const KIND_LABEL = {manual:"手册", standard:"标准条款", internal:"厂内文件", ticket:"历史工单", sensor:"实时读数"};
+const KIND_ORDER = ["manual","standard","internal","ticket","sensor"];
+
+let domain = "equipment";
+let last = null;
+
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function setDomain(next){
+  domain = next;
+  document.querySelectorAll("#seg button").forEach(b => b.classList.toggle("on", b.dataset.domain === next));
+  $("q").placeholder = next === "equipment"
+    ? "例如：3 号线空压机报 E05，排气温度 118℃，怎么处理？"
+    : "例如：对照新版 7.1.6 组织知识，我们质量手册要改哪几处？";
+  $("samples").innerHTML = SAMPLES[next].map(t => `<button type="button">${esc(t)}</button>`).join("");
+  document.querySelectorAll("#samples button").forEach(b => b.onclick = () => { $("q").value = b.textContent; ask(); });
+  $("thread").innerHTML = '<div class="empty">已切换到「' + (next==="equipment"?"设备运维":"文件体检") + '」。同一个检索引擎，换了一套文档与工具。</div>';
+  $("evidence").innerHTML = '<div class="empty">提问后在这里显示证据。</div>';
+  $("evcount").textContent = "";
+  $("draftbar").hidden = true;
+  last = null;
+}
+
+function citeLabel(c){
+  if (c.kind === "ticket") return c.chunk_id;
+  if (c.kind === "sensor") return "实时参数";
+  const page = c.page ? `p${c.page}` : "";
+  const sec = (c.section || "").split(" ")[0];
+  return [page, sec].filter(Boolean).join(" ") || c.doc_title;
+}
+
+function renderAnswer(data){
+  const t = $("thread");
+  t.innerHTML = "";
+
+  const q = document.createElement("div");
+  q.className = "q";
+  q.textContent = data.question;
+  t.appendChild(q);
+
+  if (data.refusal){
+    const box = document.createElement("div");
+    box.className = "refusal " + (data.refusal.kind === "safety_blocked" ? "safety" : "evidence");
+    const tag = data.refusal.kind === "safety_blocked" ? "安全拦截" : "证据不足";
+    const missing = (data.refusal.missing || []).map(m => `<li>${esc(m)}</li>`).join("");
+    box.innerHTML = `<span class="tag">${tag}</span>${esc(data.refusal.reason)}
+      ${missing ? `<ul>${missing}</ul>` : ""}
+      <div class="hint">建议：${esc(data.refusal.action)}</div>`;
+    t.appendChild(box);
+  } else {
+    const box = document.createElement("div");
+    box.className = "a";
+    box.innerHTML = `<div class="lead">${data.claims.length} 条结论 · 置信 ${
+      data.confidence === "high" ? "高" : "低（存在未通过校验的引用）"}</div>`;
+    data.claims.forEach((c, i) => {
+      const row = document.createElement("div");
+      row.className = "claim";
+      const chips = (c.citation_ids || []).map(id => {
+        const cite = data.citations.find(x => x.chunk_id === id);
+        return `<button class="chip" data-cid="${esc(id)}">${esc(cite ? citeLabel(cite) : id)}</button>`;
+      }).join("");
+      row.innerHTML = `<div class="n">${i + 1}</div><div class="txt">${esc(c.text)}
+        ${chips ? `<div class="chips">${chips}</div>` : `<div class="chips"><span class="chip" style="color:#a32d2d">无引用</span></div>`}</div>`;
+      box.appendChild(row);
+    });
+    t.appendChild(box);
+  }
+
+  const trace = document.createElement("div");
+  trace.className = "hint";
+  trace.textContent = "trace：" + data.trace.filter(x => x.tool).map(x => `${x.tool} ${x.elapsed_ms}ms`).join(" · ")
+    + ` ｜ 总计 ${data.elapsed_ms}ms ｜ ${data.provider}`;
+  t.appendChild(trace);
+
+  t.querySelectorAll(".chip[data-cid]").forEach(b => b.onclick = () => highlight(b.dataset.cid));
+  renderEvidence(data);
+  renderDraft(data);
+}
+
+function renderEvidence(data){
+  const groups = {};
+  data.citations.forEach(c => { (groups[c.kind] ||= []).push(c); });
+  const order = KIND_ORDER.filter(k => groups[k]);
+  if (!order.length){
+    $("evidence").innerHTML = '<div class="empty">本次没有可用证据——这正是被拒答的原因。</div>';
+    $("evcount").textContent = "";
+    return;
+  }
+  $("evcount").textContent = `${data.citations.length} 条`;
+  $("evidence").innerHTML = order.map(kind => {
+    const items = groups[kind];
+    const head = `<h3 style="margin-top:${kind === order[0] ? 0 : 14}px">${KIND_LABEL[kind] || kind} <span>${items.length}</span></h3>`;
+    const cards = items.map(c => {
+      if (c.kind === "sensor"){
+        return `<div class="card" id="ev-${esc(c.chunk_id)}">
+          <div class="where"><span>${esc(c.doc_title)}</span><span>${esc(c.section || "")}</span></div>
+          <div class="body">${esc(c.snippet).replace(/超标/g, '<span class="bad">超标</span>')}</div></div>`;
+      }
+      if (c.kind === "ticket"){
+        return `<div class="card" id="ev-${esc(c.chunk_id)}">
+          <div class="where"><span class="num">${esc(c.chunk_id)}</span><span>${esc(c.section || "")}</span></div>
+          <div class="body">${esc(c.snippet)}</div></div>`;
+      }
+      const where = [c.doc_title, c.page ? `p${c.page}` : "", c.section || ""].filter(Boolean).join(" · ");
+      return `<div class="card" id="ev-${esc(c.chunk_id)}">
+        <div class="where"><span>${esc(where)}</span><span class="num">${esc(c.chunk_id.split("#").slice(1).join("#"))}</span></div>
+        <div class="body">${esc(c.snippet)}</div></div>`;
+    }).join("");
+    return head + cards;
+  }).join("");
+}
+
+function highlight(cid){
+  const el = document.getElementById("ev-" + cid);
+  if (!el) return;
+  document.querySelectorAll(".card.hl").forEach(x => x.classList.remove("hl"));
+  el.classList.add("hl");
+  el.scrollIntoView({behavior:"smooth", block:"center"});
+}
+
+function renderDraft(data){
+  const bar = $("draftbar");
+  bar.innerHTML = "";
+  if (data.domain === "equipment"){
+    const sensor = data.citations.find(c => c.kind === "sensor");
+    if (!sensor){ bar.hidden = true; return; }
+    const deviceId = sensor.chunk_id.split(":")[1];
+    const code = (data.question.match(/\b[A-Z]{1,2}\d{2,3}\b/) || [""])[0];
+    bar.innerHTML = `<span class="tag">草稿</span>
+      <span class="t">工单草稿 · ${esc(deviceId)} ${code ? "/ " + esc(code) : ""} · 待人工确认</span>
+      <button id="mk">生成工单草稿</button>`;
+    bar.hidden = false;
+    $("mk").onclick = async () => {
+      const r = await fetch("/api/tickets/draft", {method:"POST", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({device_id: deviceId, fault_code: code, symptom: data.question})});
+      const j = await r.json();
+      bar.innerHTML = `<span class="tag">已存</span>
+        <span class="t">工单草稿 ${esc(j.draft?.ticket_id || "")} · 状态 ${esc(j.draft?.status || "draft")} · 需人工确认后入库</span>`;
+    };
+  } else if (data.findings && data.findings.length){
+    bar.innerHTML = `<span class="tag">差距</span>
+      <span class="t">发现 ${data.findings.length} 项差距：${data.findings.map(f => esc(f.gap_id)).join("、")} · 待体系负责人确认</span>
+      <button id="rec">记入差距清单</button>`;
+    bar.hidden = false;
+    $("rec").onclick = async () => {
+      for (const f of data.findings){
+        await fetch("/api/gaps/record", {method:"POST", headers:{"Content-Type":"application/json"},
+          body: JSON.stringify({gap_id: f.gap_id, clause_id: f.clause_id, target_doc: f.target_doc, note: f.advice})});
+      }
+      bar.innerHTML = `<span class="tag">已存</span>
+        <span class="t">${data.findings.length} 项差距已写入清单草稿 · 状态 draft</span>`;
+    };
+  } else {
+    bar.hidden = true;
+  }
+}
+
+async function ask(){
+  const input = $("q");
+  const text = input.value.trim();
+  if (!text) return;
+  $("send").disabled = true;
+  try{
+    const res = await fetch("/api/ask", {method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({domain, query: text})});
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const data = await res.json();
+    last = data;
+    renderAnswer(data);
+    input.value = "";
+  }catch(err){
+    $("banner").style.display = "block";
+    $("banner").textContent = "请求失败：" + err.message + "。请用 uvicorn app.main:app 启动后访问，不要直接双击打开 HTML。";
+  }finally{
+    $("send").disabled = false;
+  }
+}
+
+async function boot(){
+  document.querySelectorAll("#seg button").forEach(b => b.onclick = () => setDomain(b.dataset.domain));
+  $("form").onsubmit = (e) => { e.preventDefault(); ask(); };
+  setDomain("equipment");
+
+  try{
+    const h = await (await fetch("/healthz")).json();
+    $("provider").textContent = h.provider;
+  }catch(e){}
+
+  try{
+    const s = await (await fetch("/api/domain/equipment/stats")).json();
+    const c = await (await fetch("/api/domain/compliance/stats")).json();
+    $("corpus").textContent = `设备 ${s.chunks} 段 · 体检 ${c.chunks} 段`;
+  }catch(e){}
+
+  try{
+    const m = await (await fetch("/api/eval/latest")).json();
+    if (m.available){
+      const pct = v => (v * 100).toFixed(1) + "%";
+      const cells = [
+        ["Recall@1", pct(m.equipment["recall@1"]), "设备域 · 型号过滤开启"],
+        ["Recall@5", pct(m.equipment["recall@5"]), "设备域"],
+        ["错误型号引用", pct(m.equipment.wrong_model_when_unfiltered), "关闭型号过滤时"],
+        ["差距召回", pct(m.compliance.gap_recall), "体检域 · 规则比对"],
+        ["拒答正确率", pct(m.equipment.refusal_accuracy), "设备域 7 条应拒样本"],
+        ["误拒率", pct(m.equipment.over_refusal), "设备域 25 条应答样本"]
+      ];
+      $("metrics").innerHTML = cells.map(([k,v,s]) =>
+        `<div class="m"><div class="k">${esc(k)}</div><div class="v">${esc(v)}</div><div class="s">${esc(s)}</div></div>`).join("")
+        + `<div class="m" style="grid-column:1/-1"><div class="k">数据来源</div>
+           <div class="s" style="font-family:var(--mono)">${esc(m.file)} · provider ${esc(m.provider)} · ${esc(m.generated_at)}</div></div>`;
+    }
+  }catch(e){}
+}
+boot();
+</script>
+</body>
+</html>
