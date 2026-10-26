@@ -15,11 +15,9 @@ import time
 from datetime import datetime
 from pathlib import Path
 
-from core.config import DATA_DIR
+from core.store import records
 from core.types import Citation, EvidenceStats, ToolResult
 from domains.equipment import store
-
-DRAFT_PATH: Path = DATA_DIR / "equipment" / "tickets" / "drafts.jsonl"
 
 SENSOR_THRESHOLD_KEYS = {
     "temp_c": ("exhaust_temp_c", "bearing_temp_c"),
@@ -203,25 +201,35 @@ def create_ticket_draft(
     level: str = "P2",
     confirmed: bool = False,
 ) -> ToolResult:
+    """Draft a maintenance ticket. The agent never decides it is confirmed.
+
+    `confirmed=True` is accepted from the caller because the API exposes it, but
+    the record starts as a draft in the store either way: the state machine owns
+    the status, not the argument.
+    """
+
     device = store.devices().get(device_id, {})
-    draft = {
-        "ticket_id": f"D{datetime.now():%Y%m%d%H%M%S}",
+    ticket_id = f"D{datetime.now():%Y%m%d%H%M%S}"
+    payload = {
+        "ticket_id": ticket_id,
         "device_id": device_id,
         "device_name": device.get("name"),
         "line": device.get("line"),
         "fault_code": fault_code.upper(),
         "symptom": symptom,
         "level": level,
-        "status": "confirmed" if confirmed else "draft",
         "created_by": "agent",
-        "created_at": datetime.now().isoformat(timespec="seconds"),
     }
-    DRAFT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    with DRAFT_PATH.open("a", encoding="utf-8") as f:
-        f.write(json.dumps(draft, ensure_ascii=False) + "\n")
+    record = records.create("ticket", ref=ticket_id, payload=payload)
+    if confirmed:
+        record = records.transition(record["id"], records.CONFIRMED, actor="api")
     return ToolResult(
         ok=True,
-        data={"draft": draft, "stored": True, "needs_confirmation": not confirmed},
+        data={
+            "draft": record,
+            "stored": True,
+            "needs_confirmation": record["status"] == records.DRAFT,
+        },
         citations=[],
     )
 

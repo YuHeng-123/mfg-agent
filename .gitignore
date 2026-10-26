@@ -3,6 +3,6 @@ __pycache__/
 .pytest_cache/
 .venv/
 .env
-data/equipment/tickets/drafts.jsonl
-data/compliance/diffs/recorded_gaps.jsonl
 *.log
+# 写操作的运行时状态（SQLite），不是语料，不进仓库
+data/state.sqlite3

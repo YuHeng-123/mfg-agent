@@ -6,7 +6,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app.main import app
-from domains.equipment import tools as eq_tools
+from core.store import records
 
 
 @pytest.fixture(scope="module")
@@ -45,13 +45,49 @@ def test_compliance_findings_reach_the_client(client: TestClient):
 
 
 def test_draft_is_never_confirmed_automatically(client: TestClient, tmp_path, monkeypatch):
-    monkeypatch.setattr(eq_tools, "DRAFT_PATH", tmp_path / "drafts.jsonl")
+    monkeypatch.setattr(records, "DB_PATH", tmp_path / "state.sqlite3")
     body = client.post(
         "/api/tickets/draft",
         json={"device_id": "AC-300-03", "fault_code": "E05", "symptom": "排气温度高"},
     ).json()
     assert body["draft"]["status"] == "draft"
     assert body["needs_confirmation"] is True
+
+
+def test_unconfirmed_record_is_not_in_the_official_list(client: TestClient, tmp_path, monkeypatch):
+    """The rule that matters: a draft is not an instruction yet."""
+
+    monkeypatch.setattr(records, "DB_PATH", tmp_path / "state.sqlite3")
+    created = client.post(
+        "/api/tickets/draft",
+        json={"device_id": "AC-300-03", "fault_code": "E05", "symptom": "排气温度高"},
+    ).json()["draft"]
+
+    body = client.get("/api/records", params={"kind": "ticket"}).json()
+    assert any(r["id"] == created["id"] for r in body["items"])
+    assert all(r["id"] != created["id"] for r in body["official"])
+
+    confirmed = client.post(f"/api/records/{created['id']}/confirm").json()["record"]
+    assert confirmed["status"] == "confirmed"
+    body = client.get("/api/records", params={"kind": "ticket"}).json()
+    assert any(r["id"] == created["id"] for r in body["official"])
+
+
+def test_record_state_machine_rejects_backwards_moves(client: TestClient, tmp_path, monkeypatch):
+    monkeypatch.setattr(records, "DB_PATH", tmp_path / "state.sqlite3")
+    client.post(
+        "/api/gaps/record", json={"gap_id": "G-01", "clause_id": "7.1.6", "target_doc": "质量手册"}
+    ).json()
+    rid = client.get("/api/records", params={"kind": "gap"}).json()["items"][0]["id"]
+
+    client.post(f"/api/records/{rid}/confirm").json()
+    client.post(f"/api/records/{rid}/close").json()
+    assert client.get("/api/records", params={"kind": "gap"}).json()["items"][0]["status"] == "closed"
+
+    # closed -> confirmed, and confirming twice, are both illegal
+    assert client.post(f"/api/records/{rid}/confirm").status_code == 409
+    assert client.post(f"/api/records/{rid}/close").status_code == 409
+    assert client.post("/api/records/99999/confirm").status_code == 404
 
 
 def test_eval_endpoint_quotes_a_real_report(client: TestClient):

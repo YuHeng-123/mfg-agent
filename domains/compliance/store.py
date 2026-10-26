@@ -10,12 +10,12 @@ from pathlib import Path
 from core.config import DATA_DIR
 from core.rag.index import Index
 from core.rag.loader import load_markdown
+from core.store import records
 from core.types import Chunk
 
 CP = DATA_DIR / "compliance"
 STANDARD_DIR = CP / "standards"
 INTERNAL_DIR = CP / "internal"
-GAP_PATH = CP / "diffs" / "recorded_gaps.jsonl"
 
 STANDARD_META = {
     "GB19001-2026_excerpt": {
@@ -70,25 +70,19 @@ def index() -> Index:
 
 
 def record_gap(payload: dict) -> dict:
-    GAP_PATH.parent.mkdir(parents=True, exist_ok=True)
+    """Same write side as a ticket: drafted by the agent, signed by a human."""
+
     row = {
         "recorded_at": datetime.now().isoformat(timespec="seconds"),
-        "status": "draft",
         **payload,
     }
-    with GAP_PATH.open("a", encoding="utf-8") as f:
-        f.write(json.dumps(row, ensure_ascii=False) + "\n")
-    return row
+    return records.create("gap", ref=str(payload.get("gap_id", "")), payload=row)
 
 
-def recorded() -> list[dict]:
-    if not GAP_PATH.is_file():
-        return []
-    return [
-        json.loads(line)
-        for line in GAP_PATH.read_text(encoding="utf-8").splitlines()
-        if line.strip()
-    ]
+def recorded(status: str | None = None, include_drafts: bool = True) -> list[dict]:
+    return records.list_records(
+        kind="gap", status=status, include_drafts=include_drafts, limit=50
+    )
 
 
 def clause_chunk(section_hint: str) -> Chunk | None:

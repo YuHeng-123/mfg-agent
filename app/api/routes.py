@@ -77,6 +77,52 @@ def gap_record(req: GapRecordRequest) -> dict:
     return result.data
 
 
+@router.get("/api/records")
+def list_records(kind: str | None = None, status: str | None = None, limit: int = 20) -> dict:
+    """Read side of the write path.
+
+    `status` empty and `official=true` returns only what a human signed. The page
+    shows both, but never in one column: a draft next to a confirmed record reads
+    like the same thing and it is not.
+    """
+
+    from core.store import records as store
+
+    return {
+        "items": store.list_records(kind=kind, status=status, limit=limit),
+        "official": store.list_records(kind=kind, status=status, limit=limit, include_drafts=False),
+        "database": str(store.DB_PATH),
+    }
+
+
+class TransitionRequest(BaseModel):
+    actor: str = "user"
+
+
+@router.post("/api/records/{record_id}/confirm")
+def confirm_record(record_id: int, req: TransitionRequest | None = None) -> dict:
+    from core.store import records as store
+
+    try:
+        return {"record": store.transition(record_id, store.CONFIRMED, actor=(req.actor if req else "user"))}
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+
+
+@router.post("/api/records/{record_id}/close")
+def close_record(record_id: int, req: TransitionRequest | None = None) -> dict:
+    from core.store import records as store
+
+    try:
+        return {"record": store.transition(record_id, store.CLOSED, actor=(req.actor if req else "user"))}
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+
+
 @router.get("/api/eval/latest")
 def latest_eval() -> dict:
     """The numbers shown in the page footer come from a real report file."""
@@ -122,6 +168,10 @@ def latest_eval() -> dict:
             "wrong_model_when_unfiltered": eq["retrieval"]["model_filter"]["without_filter_wrong_model"],
             "refusal_accuracy": eq["answer"]["refusal_accuracy"],
             "over_refusal": eq["answer"]["rates"]["over_refusal"],
+            "answered": eq["answer"]["rates"]["answered"],
+            "refused": eq["answer"]["rates"]["refused"],
+            "multihop_coverage": eq["answer"].get("multihop_coverage", 0.0),
+            "singlehop_coverage": eq["answer"].get("singlehop_coverage", 0.0),
         }
     cp = data.get("compliance", {})
     if "gaps" in cp and "answer" in cp:

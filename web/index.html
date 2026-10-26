@@ -87,6 +87,20 @@
   .ok{color:var(--green)}
   .empty{font-size:12.5px;color:var(--ink3)}
 
+  .rec{border:1px solid var(--line);border-radius:9px;padding:8px 10px;margin-bottom:8px;background:#fff}
+  .rec:last-child{margin-bottom:0}
+  .rec .top{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+  .rec .rid{font-family:var(--mono);font-size:11px;color:var(--ink3)}
+  .rec .desc{font-size:12.5px;color:var(--ink);margin-top:3px;line-height:1.5}
+  .rec .act{margin-top:6px;display:flex;gap:6px}
+  .rec button{border:1px solid var(--line2);background:#fbfbfa;color:var(--ink2);
+              border-radius:6px;padding:2px 9px;font-size:11.5px}
+  .rec button:hover{border-color:var(--blue);color:var(--blue)}
+  .st{font-size:11px;font-weight:600;border:1px solid currentColor;border-radius:4px;padding:0 5px}
+  .st.draft{color:var(--amber)}
+  .st.confirmed{color:var(--green)}
+  .st.closed{color:var(--ink3)}
+
   footer.draft{border-top:1px solid var(--line);background:var(--amber-bg);
                padding:9px 18px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
   footer.draft .t{font-size:12.5px;color:var(--amber);flex:1;min-width:220px}
@@ -166,6 +180,11 @@
     <div class="panel ev">
       <h3>证据 <span id="evcount"></span></h3>
       <div id="evidence"><div class="empty">提问后在这里显示命中的手册段落、工单与实时参数。</div></div>
+    </div>
+    <div class="panel ev">
+      <h3>写入记录 <span id="reccount"></span></h3>
+      <div id="records"><div class="empty">生成工单草稿或记入差距清单后，状态机流转会显示在这里。</div></div>
+      <div class="hint">草稿不会进入正式清单，必须人工确认。</div>
     </div>
   </aside>
 </main>
@@ -327,6 +346,7 @@ function renderDraft(data){
       const j = await r.json();
       bar.innerHTML = `<span class="tag">已存</span>
         <span class="t">工单草稿 ${esc(j.draft?.ticket_id || "")} · 状态 ${esc(j.draft?.status || "draft")} · 需人工确认后入库</span>`;
+      loadRecords();
     };
   } else if (data.findings && data.findings.length){
     bar.innerHTML = `<span class="tag">差距</span>
@@ -340,10 +360,54 @@ function renderDraft(data){
       }
       bar.innerHTML = `<span class="tag">已存</span>
         <span class="t">${data.findings.length} 项差距已写入清单草稿 · 状态 draft</span>`;
+      loadRecords();
     };
   } else {
     bar.hidden = true;
   }
+}
+
+const ST_LABEL = {draft:"草稿", confirmed:"已确认", closed:"已关闭"};
+const KIND_REC = {ticket:"工单", gap:"差距"};
+
+function recDesc(r){
+  if (r.kind === "ticket") return `${r.device_id || ""} ${r.fault_code || ""} ${r.symptom || ""}`.trim();
+  return `${r.clause_id || ""} → ${r.target_doc || ""}`.trim() || r.gap_id || "";
+}
+
+function renderRecords(items){
+  const box = $("records");
+  if (!items || !items.length){
+    box.innerHTML = '<div class="empty">生成工单草稿或记入差距清单后，状态机流转会显示在这里。</div>';
+    $("reccount").textContent = "";
+    return;
+  }
+  $("reccount").textContent = `最近 ${items.length} 条`;
+  box.innerHTML = items.map(r => `
+    <div class="rec">
+      <div class="top">
+        <span class="st ${esc(r.status)}">${esc(ST_LABEL[r.status] || r.status)}</span>
+        <span class="rid">#${r.id} ${esc(KIND_REC[r.kind] || r.kind)}</span>
+      </div>
+      <div class="desc">${esc(recDesc(r))}</div>
+      <div class="act">
+        ${r.status === "draft" ? `<button data-act="confirm" data-id="${r.id}">人工确认</button>` : ""}
+        ${r.status !== "closed" ? `<button data-act="close" data-id="${r.id}">关闭</button>` : ""}
+      </div>
+    </div>`).join("");
+  box.querySelectorAll("button[data-act]").forEach(b => {
+    b.onclick = async () => {
+      await fetch(`/api/records/${b.dataset.id}/${b.dataset.act}`, {method:"POST"});
+      await loadRecords();
+    };
+  });
+}
+
+async function loadRecords(){
+  try{
+    const j = await (await fetch("/api/records?limit=5")).json();
+    renderRecords(j.items || []);
+  }catch(e){ /* 记录面板失败不影响主流程 */ }
 }
 
 async function ask(){
@@ -392,8 +456,10 @@ async function boot(){
         ["Recall@5", pct(m.equipment["recall@5"]), "设备域"],
         ["错误型号引用", pct(m.equipment.wrong_model_when_unfiltered), "关闭型号过滤时"],
         ["差距召回", pct(m.compliance.gap_recall), "体检域 · 规则比对"],
-        ["拒答正确率", pct(m.equipment.refusal_accuracy), "设备域 7 条应拒样本"],
-        ["误拒率", pct(m.equipment.over_refusal), "设备域 25 条应答样本"]
+        ["单跳覆盖率", pct(m.equipment.singlehop_coverage ?? 0), "设备域 · gold 1 段"],
+        ["多跳覆盖率", pct(m.equipment.multihop_coverage ?? 0), "设备域 · gold 2-3 段"],
+        ["拒答正确率", pct(m.equipment.refusal_accuracy), `设备域 ${m.equipment.refused} 条应拒样本`],
+        ["误拒率", pct(m.equipment.over_refusal), `设备域 ${m.equipment.answered} 条应答样本`]
       ];
       $("metrics").innerHTML = cells.map(([k,v,s]) =>
         `<div class="m"><div class="k">${esc(k)}</div><div class="v">${esc(v)}</div><div class="s">${esc(s)}</div></div>`).join("")
@@ -401,6 +467,8 @@ async function boot(){
            <div class="s" style="font-family:var(--mono)">${esc(m.file)} · provider ${esc(m.provider)} · ${esc(m.generated_at)}</div></div>`;
     }
   }catch(e){}
+
+  loadRecords();
 }
 boot();
 </script>
