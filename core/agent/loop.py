@@ -204,7 +204,9 @@ def _run_parallel(
     return outputs
 
 
-def _build_jobs(tools: list[Tool], question: str, context: dict, trace: list[TraceStep]) -> list[tuple[Tool, dict, str]]:
+def _build_jobs(
+    tools: list[Tool], question: str, context: dict, trace: list[TraceStep]
+) -> list[tuple[Tool, dict, str]]:
     jobs: list[tuple[Tool, dict, str]] = []
     for tool in tools:
         args = _build_args(tool, question, context)
