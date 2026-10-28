@@ -145,7 +145,7 @@ flowchart LR
 
 ## 实测指标
 
-来自 `evals/reports/` 下最新一份报告（文件名含 commit 短哈希、数据集、provider、样本数与耗时，报告内附阈值与逐条判定明细）。以下数字为 provider: stub，64 条测试全绿时的结果。
+来自 `evals/reports/` 下最新一份报告（文件名含 commit 短哈希、数据集、provider、样本数与耗时，报告内附阈值与逐条判定明细）。以下数字为 provider: stub，99 条测试全绿时的结果。
 
 ### 设备域（52 条样本 = 25 单跳 + 20 多跳 + 7 拒答，48 个 chunk，300 条工单）
 
@@ -198,24 +198,25 @@ flowchart LR
 ### 跨域复用
 
 ```
-core 1893 行 / domains 1329 行 → core 占逻辑代码 58.8%
-app 375 行   scripts 1890 行   tests 667 行
+core 2439 行 / domains 1379 行 → core 占逻辑代码 63.9%
+app 629 行   scripts 1995 行   tests 1277 行
 ```
 
 `tests/test_compliance.py::test_core_does_not_name_any_domain` 会扫描 `core/` 下每个 `.py`，出现“空压机/换热器/质量手册/检验规程”等词或 `domain ==` 分支即失败。抽象边界是测试守的，不是靠自觉。
 
 ---
 
-## 架构
+## 目录结构
 
 ```
-core/        与领域无关：切分 · BM25 · 工具循环 · 两道闸 · 引用校验 · 写入状态机 · 评测
+core/        与领域无关：切分 · BM25 · 工具循环 · 两道闸 · 引用校验 · 写入状态机 · 鉴权/配额 · 指标 · 评测
 domains/     领域包：只声明「文档从哪来、有哪些工具、哪些话不该答」
-app/         FastAPI 入口 + 路由 + 启动预热与自检（薄）
+app/         FastAPI 入口 + 路由 + 中间件（认人/配额/记账）+ 启动预热与自检
 data/        4 本手册 PDF（脚本生成）· 工单 · 传感器 · 标准节选 · 5 份厂内文件
 evals/       两套数据集 + 运行器 + 报告
-scripts/     手册生成 · PDF 抽取探针 · 数据生成 · 评测生成 · 阈值标定 · 消融 · 调优 · 延迟
-tests/       64 条
+scripts/     手册生成 · 数据生成 · 评测生成 · 阈值标定 · 消融 · 调优 · 延迟 · 一键初始化
+tests/       99 条
+docs/        方案 · 演示脚本 · 运维手册 · 错误分析 · 调优记录 · 进度
 ```
 
 **写入侧**：agent 产出的东西先进 SQLite（`core/store/records.py`），状态 `draft → confirmed → closed`，
@@ -227,6 +228,26 @@ tests/       64 条
 1. `ToolResult.citations` 必填（可为空）。空列表 = 该工具没有提供证据。
 2. 生成后 `guard/citation.py` 逐条核对引用是否属于本次检索结果，查不到 → 降级；全部低置信 → 整体转拒答。领域层无法绕过。
 3. 两道闸分开：`safety_blocked` 规则命中即短路（不查库、不调模型），`insufficient_evidence` 是查了但没料。混在一起就说不清"这次拒答是安全还是不会"。
+
+---
+
+## 能试点的部分（L3）
+
+演示能跑 ≠ 能给别人用。下面这些是为了"公司内部试点"加的，每条都写了怎么当场验证。
+
+| 能力 | 做法 | 怎么验 |
+|---|---|---|
+| **鉴权 · 两角色** | `X-API-Key`（只存 SHA-256），`admin` 可写/灌数据，`user` 只能提问 | 无 key → 401；user 开工单 → 403；admin → 200（`tests/test_auth.py` 10 条） |
+| **配额** | 按调用方分钟/天双窗口，超阈值 429 + `Retry-After` / `X-RateLimit-Remaining` | `for i in $(seq 70); do curl ...; done` 看第 61 次变 429 |
+| **审计留痕** | 每次提问落 `audit` 表：谁/何时/问了什么/结果/命中 chunk/耗时 | `GET /api/audit?limit=10`（user 只看自己的） |
+| **指标** | `/metrics`（Prometheus 文本）+ `/api/metrics`（JSON） | 含 QPS(60s)、P50/P95/P99、错误率、拒答率、按域拆分 |
+| **容器** | `Dockerfile` + `docker-compose.yml`，状态库挂卷、真手册只读挂载 | ⚠ **本机没有 docker，`docker compose up` 未实跑**，只做了静态校验（`tests/test_deploy.py`） |
+| **一键初始化** | `scripts/bootstrap.py`：缺数据才生成 → 自检 → 建 key，幂等 | 删掉 PDF 再跑，会重新生成并报段数 |
+| **数据可替换** | 丢 PDF + 写一行 `_meta.json`，不改代码 | `tests/test_data_replace.py` 3 条，现生成一本手册验证 |
+| **运维手册** | `docs/ops.md`：起服务 / 排障 / 升级 / 备份 | 排障表按"最可能先遇到"排序，每条给了下一步命令 |
+
+审计是 **fail closed** 的：写不进去就返回 503，宁可这次报错，也不要出现"答了但查无此事"。
+因为这句话在贯标场景里等于没有记录。
 
 ---
 
@@ -247,7 +268,13 @@ tests/       64 条
 
 ```bash
 pip install -r requirements-dev.txt
+python scripts/bootstrap.py              # 一键：缺数据才生成 → 自检 → 建 API key（幂等）
+python -m uvicorn app.main:app --port 8321   # 打开 http://127.0.0.1:8321
+```
 
+生成与评测（都只在需要时跑）：
+
+```bash
 python scripts/gen_manuals.py            # 4 本手册 → PDF + 页码/章节 ground truth
 python scripts/gen_data.py               # 300 工单 + 6 台设备 × 7 天传感器
 python scripts/gen_evals.py              # 设备域 32 条（单跳 + 拒答）
@@ -265,6 +292,9 @@ python scripts/check.ps1                 # ruff + pytest 一条命令
 uvicorn app.main:app --port 8000         # 打开 http://127.0.0.1:8000 即是页面
                                          # Windows 一键：powershell -F scripts/dev.ps1
 ```
+
+容器：`cp .env.example .env`（改掉两个 key）→ `docker compose up -d --build` → <http://localhost:8080>。
+运维、排障、备份见 `docs/ops.md`。
 
 用真模型（可选，不影响上面的可复现性）：
 
@@ -373,5 +403,8 @@ HE800_manual         4      13  12/12          12           5        128
 | 双域评测与报告（含跨域复用统计） | 完成 |
 | 单页前端（对话 + 证据面板 + 领域切换 + 草稿条 + 写入记录 + 指标条） | 完成 |
 | 机制消融（关闸对照 + 模拟编造引用的模型） | 完成 |
-| 真实 LLM 对照实验 | **未做**（无 key，报告全部为 stub；README 已说明替代方案） |
+| 鉴权（两角色 API key）· 配额 · 审计 · /metrics | 完成（P1） |
+| Dockerfile + compose | **写了但没实跑**（本机无 docker，只做静态校验） |
+| 真 LLM 通道（开关式，默认 stub） | 完成（打桩测试 6 条；**未接真 key 跑过评测**） |
+| 真实手册接入 | **通道就绪，等 PDF**（`manuals/real/` 空着，ATV320 手册需人工下载） |
 | 语料扩到 8 本手册 | **未做**（会让现有全部报告作废重跑，刻意留到下一轮） |
