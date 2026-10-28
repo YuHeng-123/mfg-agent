@@ -1,0 +1,1715 @@
+{
+  "meta": {
+    "generated_at": "2026-10-28T20:51:37",
+    "commit": "d1348db",
+    "provider": "stub",
+    "python": "3.13.14",
+    "domains": [
+      "equipment",
+      "compliance"
+    ],
+    "settings": {
+      "evidence_min_terms": 3,
+      "evidence_min_mass": 2.5,
+      "evidence_min_hits": 2,
+      "top_k": 5,
+      "max_steps": 6,
+      "demo_now": "2026-10-24 12:40"
+    },
+    "code": {
+      "core_lines": 2439,
+      "domains_lines": 1379,
+      "app_lines": 629,
+      "scripts_lines": 1995,
+      "tests_lines": 1277,
+      "core_share_of_logic": 0.639
+    },
+    "elapsed_s": 2.43
+  },
+  "equipment": {
+    "corpus": {
+      "chunks": 48,
+      "tools": [
+        "create_ticket_draft",
+        "get_device_state",
+        "get_ticket_history",
+        "search_manual"
+      ]
+    },
+    "samples": 52,
+    "retrieval": {
+      "items": [
+        {
+          "id": "E-01",
+          "kind": "retrieval",
+          "hops": 2,
+          "recall@1": 0.5,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "mrr": 1.0,
+          "all_gold_in_top5": 1.0,
+          "top1": "AX300_manual#p3#s08#c01",
+          "no_filter_other_model": false
+        },
+        {
+          "id": "E-02",
+          "kind": "retrieval",
+          "hops": 1,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "mrr": 1.0,
+          "all_gold_in_top5": 1.0,
+          "top1": "AX300_manual#p3#s07#c01",
+          "no_filter_other_model": false
+        },
+        {
+          "id": "E-03",
+          "kind": "retrieval",
+          "hops": 1,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "mrr": 1.0,
+          "all_gold_in_top5": 1.0,
+          "top1": "AX300_manual#p4#s09#c01",
+          "no_filter_other_model": false
+        },
+        {
+          "id": "E-04",
+          "kind": "retrieval",
+          "hops": 1,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "mrr": 1.0,
+          "all_gold_in_top5": 1.0,
+          "top1": "AX300_manual#p4#s10#c01",
+          "no_filter_other_model": false
+        },
+        {
+          "id": "E-05",
+          "kind": "retrieval",
+          "hops": 1,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "mrr": 1.0,
+          "all_gold_in_top5": 1.0,
+          "top1": "AX300_manual#p4#s11#c01",
+          "no_filter_other_model": false
+        },
+        {
+          "id": "E-06",
+          "kind": "retrieval",
+          "hops": 1,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "mrr": 1.0,
+          "all_gold_in_top5": 1.0,
+          "top1": "BP2200_manual#p3#s07#c01",
+          "no_filter_other_model": false
+        },
+        {
+          "id": "E-07",
+          "kind": "retrieval",
+          "hops": 1,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "mrr": 1.0,
+          "all_gold_in_top5": 1.0,
+          "top1": "BP2200_manual#p3#s08#c01",
+          "no_filter_other_model": false
+        },
+        {
+          "id": "E-08",
+          "kind": "retrieval",
+          "hops": 1,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "mrr": 1.0,
+          "all_gold_in_top5": 1.0,
+          "top1": "BP2200_manual#p4#s09#c01",
+          "no_filter_other_model": false
+        },
+        {
+          "id": "E-09",
+          "kind": "retrieval",
+          "hops": 1,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "mrr": 1.0,
+          "all_gold_in_top5": 1.0,
+          "top1": "BP2200_manual#p4#s10#c01",
+          "no_filter_other_model": false
+        },
+        {
+          "id": "E-10",
+          "kind": "retrieval",
+          "hops": 1,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "mrr": 1.0,
+          "all_gold_in_top5": 1.0,
+          "top1": "HE800_manual#p3#s09#c01",
+          "no_filter_other_model": false
+        },
+        {
+          "id": "E-11",
+          "kind": "retrieval",
+          "hops": 1,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "mrr": 1.0,
+          "all_gold_in_top5": 1.0,
+          "top1": "HE800_manual#p3#s08#c01",
+          "no_filter_other_model": false
+        },
+        {
+          "id": "E-12",
+          "kind": "retrieval",
+          "hops": 1,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "mrr": 1.0,
+          "all_gold_in_top5": 1.0,
+          "top1": "HE800_manual#p4#s10#c01",
+          "no_filter_other_model": false
+        },
+        {
+          "id": "E-13",
+          "kind": "retrieval",
+          "hops": 2,
+          "recall@1": 0.5,
+          "recall@3": 0.5,
+          "recall@5": 1.0,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "mrr": 1.0,
+          "all_gold_in_top5": 1.0,
+          "top1": "AX300_manual#p4#s08#c01",
+          "no_filter_other_model": true
+        },
+        {
+          "id": "E-14",
+          "kind": "retrieval",
+          "hops": 1,
+          "recall@1": 0.0,
+          "recall@3": 0.0,
+          "recall@5": 1.0,
+          "hit@1": 0.0,
+          "hit@3": 0.0,
+          "mrr": 0.25,
+          "all_gold_in_top5": 1.0,
+          "top1": "BP2200_manual#p2#s03#c01",
+          "no_filter_other_model": false
+        },
+        {
+          "id": "E-15",
+          "kind": "retrieval",
+          "hops": 1,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "mrr": 1.0,
+          "all_gold_in_top5": 1.0,
+          "top1": "BP2200_manual#p4#s09#c01",
+          "no_filter_other_model": false
+        },
+        {
+          "id": "E-16",
+          "kind": "retrieval",
+          "hops": 2,
+          "recall@1": 0.5,
+          "recall@3": 0.5,
+          "recall@5": 1.0,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "mrr": 1.0,
+          "all_gold_in_top5": 1.0,
+          "top1": "HE800_manual#p2#s05#c01",
+          "no_filter_other_model": false
+        },
+        {
+          "id": "E-17",
+          "kind": "retrieval",
+          "hops": 1,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "mrr": 1.0,
+          "all_gold_in_top5": 1.0,
+          "top1": "AX300_manual#p5#s13#c01",
+          "no_filter_other_model": false
+        },
+        {
+          "id": "E-18",
+          "kind": "retrieval",
+          "hops": 1,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "mrr": 1.0,
+          "all_gold_in_top5": 1.0,
+          "top1": "BP2200_manual#p4#s12#c01",
+          "no_filter_other_model": false
+        },
+        {
+          "id": "E-19",
+          "kind": "retrieval",
+          "hops": 1,
+          "recall@1": 0.0,
+          "recall@3": 0.0,
+          "recall@5": 0.0,
+          "hit@1": 0.0,
+          "hit@3": 0.0,
+          "mrr": 0.0,
+          "all_gold_in_top5": 0.0,
+          "top1": "HE800_manual#p3#s07#c01",
+          "no_filter_other_model": false
+        },
+        {
+          "id": "E-20",
+          "kind": "retrieval",
+          "hops": 1,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "mrr": 1.0,
+          "all_gold_in_top5": 1.0,
+          "top1": "AX300_manual#p2#s04#c01",
+          "no_filter_other_model": true
+        },
+        {
+          "id": "E-21",
+          "kind": "retrieval",
+          "hops": 1,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "mrr": 1.0,
+          "all_gold_in_top5": 1.0,
+          "top1": "BP2200_manual#p2#s04#c01",
+          "no_filter_other_model": false
+        },
+        {
+          "id": "E-22",
+          "kind": "retrieval",
+          "hops": 2,
+          "recall@1": 0.5,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "mrr": 1.0,
+          "all_gold_in_top5": 1.0,
+          "top1": "HE800_manual#p2#s04#c01",
+          "no_filter_other_model": false
+        },
+        {
+          "id": "E-23",
+          "kind": "retrieval",
+          "hops": 1,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "mrr": 1.0,
+          "all_gold_in_top5": 1.0,
+          "top1": "AX300_manual#p2#s03#c01",
+          "no_filter_other_model": true
+        },
+        {
+          "id": "E-24",
+          "kind": "retrieval",
+          "hops": 1,
+          "recall@1": 1.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "mrr": 1.0,
+          "all_gold_in_top5": 1.0,
+          "top1": "BP2200_manual#p2#s03#c01",
+          "no_filter_other_model": false
+        },
+        {
+          "id": "E-25",
+          "kind": "retrieval",
+          "hops": 1,
+          "recall@1": 0.0,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "hit@1": 0.0,
+          "hit@3": 1.0,
+          "mrr": 0.5,
+          "all_gold_in_top5": 1.0,
+          "top1": "HE800_manual#p3#s07#c01",
+          "no_filter_other_model": false
+        },
+        {
+          "id": "M-01",
+          "kind": "multihop",
+          "hops": 2,
+          "recall@1": 0.0,
+          "recall@3": 0.5,
+          "recall@5": 1.0,
+          "hit@1": 0.0,
+          "hit@3": 1.0,
+          "mrr": 0.5,
+          "all_gold_in_top5": 1.0,
+          "top1": "AX300_manual#p3#s08#c01",
+          "no_filter_other_model": false
+        },
+        {
+          "id": "M-02",
+          "kind": "multihop",
+          "hops": 2,
+          "recall@1": 0.5,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "mrr": 1.0,
+          "all_gold_in_top5": 1.0,
+          "top1": "AX300_manual#p2#s03#c01",
+          "no_filter_other_model": true
+        },
+        {
+          "id": "M-03",
+          "kind": "multihop",
+          "hops": 2,
+          "recall@1": 0.5,
+          "recall@3": 0.5,
+          "recall@5": 1.0,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "mrr": 1.0,
+          "all_gold_in_top5": 1.0,
+          "top1": "AX300_manual#p4#s09#c01",
+          "no_filter_other_model": false
+        },
+        {
+          "id": "M-04",
+          "kind": "multihop",
+          "hops": 2,
+          "recall@1": 0.5,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "mrr": 1.0,
+          "all_gold_in_top5": 1.0,
+          "top1": "AX300_manual#p5#s13#c01",
+          "no_filter_other_model": false
+        },
+        {
+          "id": "M-05",
+          "kind": "multihop",
+          "hops": 2,
+          "recall@1": 0.5,
+          "recall@3": 0.5,
+          "recall@5": 0.5,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "mrr": 1.0,
+          "all_gold_in_top5": 0.0,
+          "top1": "AX300_manual#p5#s12#c01",
+          "no_filter_other_model": false
+        },
+        {
+          "id": "M-06",
+          "kind": "multihop",
+          "hops": 3,
+          "recall@1": 0.3333333333333333,
+          "recall@3": 0.6666666666666666,
+          "recall@5": 1.0,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "mrr": 1.0,
+          "all_gold_in_top5": 1.0,
+          "top1": "AX300_manual#p5#s13#c01",
+          "no_filter_other_model": false
+        },
+        {
+          "id": "M-07",
+          "kind": "multihop",
+          "hops": 2,
+          "recall@1": 0.5,
+          "recall@3": 0.5,
+          "recall@5": 1.0,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "mrr": 1.0,
+          "all_gold_in_top5": 1.0,
+          "top1": "AX310_manual#p3#s05#c01",
+          "no_filter_other_model": false
+        },
+        {
+          "id": "M-08",
+          "kind": "multihop",
+          "hops": 2,
+          "recall@1": 0.5,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "mrr": 1.0,
+          "all_gold_in_top5": 1.0,
+          "top1": "AX310_manual#p3#s07#c01",
+          "no_filter_other_model": false
+        },
+        {
+          "id": "M-09",
+          "kind": "multihop",
+          "hops": 2,
+          "recall@1": 0.5,
+          "recall@3": 0.5,
+          "recall@5": 1.0,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "mrr": 1.0,
+          "all_gold_in_top5": 1.0,
+          "top1": "AX310_manual#p3#s05#c01",
+          "no_filter_other_model": false
+        },
+        {
+          "id": "M-10",
+          "kind": "multihop",
+          "hops": 2,
+          "recall@1": 0.5,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "mrr": 1.0,
+          "all_gold_in_top5": 1.0,
+          "top1": "AX310_manual#p2#s03#c01",
+          "no_filter_other_model": false
+        },
+        {
+          "id": "M-11",
+          "kind": "multihop",
+          "hops": 2,
+          "recall@1": 0.5,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "mrr": 1.0,
+          "all_gold_in_top5": 1.0,
+          "top1": "BP2200_manual#p4#s09#c01",
+          "no_filter_other_model": false
+        },
+        {
+          "id": "M-12",
+          "kind": "multihop",
+          "hops": 2,
+          "recall@1": 0.5,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "mrr": 1.0,
+          "all_gold_in_top5": 1.0,
+          "top1": "BP2200_manual#p3#s08#c01",
+          "no_filter_other_model": false
+        },
+        {
+          "id": "M-13",
+          "kind": "multihop",
+          "hops": 2,
+          "recall@1": 0.5,
+          "recall@3": 0.5,
+          "recall@5": 1.0,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "mrr": 1.0,
+          "all_gold_in_top5": 1.0,
+          "top1": "BP2200_manual#p4#s10#c01",
+          "no_filter_other_model": false
+        },
+        {
+          "id": "M-14",
+          "kind": "multihop",
+          "hops": 2,
+          "recall@1": 0.5,
+          "recall@3": 0.5,
+          "recall@5": 1.0,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "mrr": 1.0,
+          "all_gold_in_top5": 1.0,
+          "top1": "BP2200_manual#p3#s07#c01",
+          "no_filter_other_model": false
+        },
+        {
+          "id": "M-15",
+          "kind": "multihop",
+          "hops": 2,
+          "recall@1": 0.5,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "mrr": 1.0,
+          "all_gold_in_top5": 1.0,
+          "top1": "BP2200_manual#p2#s02#c01",
+          "no_filter_other_model": true
+        },
+        {
+          "id": "M-16",
+          "kind": "multihop",
+          "hops": 2,
+          "recall@1": 0.5,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "mrr": 1.0,
+          "all_gold_in_top5": 1.0,
+          "top1": "HE800_manual#p3#s09#c01",
+          "no_filter_other_model": false
+        },
+        {
+          "id": "M-17",
+          "kind": "multihop",
+          "hops": 2,
+          "recall@1": 0.5,
+          "recall@3": 0.5,
+          "recall@5": 1.0,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "mrr": 1.0,
+          "all_gold_in_top5": 1.0,
+          "top1": "HE800_manual#p3#s07#c01",
+          "no_filter_other_model": false
+        },
+        {
+          "id": "M-18",
+          "kind": "multihop",
+          "hops": 2,
+          "recall@1": 0.5,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "mrr": 1.0,
+          "all_gold_in_top5": 1.0,
+          "top1": "HE800_manual#p4#s12#c01",
+          "no_filter_other_model": false
+        },
+        {
+          "id": "M-19",
+          "kind": "multihop",
+          "hops": 2,
+          "recall@1": 0.5,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "mrr": 1.0,
+          "all_gold_in_top5": 1.0,
+          "top1": "HE800_manual#p3#s08#c01",
+          "no_filter_other_model": false
+        },
+        {
+          "id": "M-20",
+          "kind": "multihop",
+          "hops": 2,
+          "recall@1": 0.5,
+          "recall@3": 1.0,
+          "recall@5": 1.0,
+          "hit@1": 1.0,
+          "hit@3": 1.0,
+          "mrr": 1.0,
+          "all_gold_in_top5": 1.0,
+          "top1": "HE800_manual#p4#s10#c01",
+          "no_filter_other_model": false
+        }
+      ],
+      "recall@1": 0.6518518518518518,
+      "recall@3": 0.837037037037037,
+      "recall@5": 0.9666666666666667,
+      "hit@1": 0.9111111111111111,
+      "hit@3": 0.9555555555555556,
+      "mrr": 0.9388888888888889,
+      "singlehop": {
+        "recall@1": 0.8,
+        "recall@3": 0.88,
+        "recall@5": 0.96,
+        "hit@1": 0.88,
+        "hit@3": 0.92,
+        "mrr": 0.91,
+        "all_gold_in_top5": 0.96,
+        "questions": 25
+      },
+      "multihop": {
+        "recall@1": 0.4666666666666667,
+        "recall@3": 0.7833333333333333,
+        "recall@5": 0.975,
+        "hit@1": 0.95,
+        "hit@3": 1.0,
+        "mrr": 0.975,
+        "all_gold_in_top5": 0.95,
+        "questions": 20
+      },
+      "model_filter": {
+        "with_filter_top1_gold": 0.9111111111111111,
+        "without_filter_wrong_model": 0.1111111111111111,
+        "questions": 45
+      }
+    },
+    "answer": {
+      "detail": [
+        {
+          "id": "E-01",
+          "type": "retrieval",
+          "refused": false,
+          "refusal_kind": null,
+          "expected_kind": null,
+          "citation_precision": 1.0,
+          "citation_hit": 1.0,
+          "citation_coverage": 0.5,
+          "cited": 1,
+          "gold": 2
+        },
+        {
+          "id": "E-02",
+          "type": "retrieval",
+          "refused": false,
+          "refusal_kind": null,
+          "expected_kind": null,
+          "citation_precision": 1.0,
+          "citation_hit": 1.0,
+          "citation_coverage": 1.0,
+          "cited": 1,
+          "gold": 1
+        },
+        {
+          "id": "E-03",
+          "type": "retrieval",
+          "refused": false,
+          "refusal_kind": null,
+          "expected_kind": null,
+          "citation_precision": 1.0,
+          "citation_hit": 1.0,
+          "citation_coverage": 1.0,
+          "cited": 1,
+          "gold": 1
+        },
+        {
+          "id": "E-04",
+          "type": "retrieval",
+          "refused": false,
+          "refusal_kind": null,
+          "expected_kind": null,
+          "citation_precision": 1.0,
+          "citation_hit": 1.0,
+          "citation_coverage": 1.0,
+          "cited": 1,
+          "gold": 1
+        },
+        {
+          "id": "E-05",
+          "type": "retrieval",
+          "refused": false,
+          "refusal_kind": null,
+          "expected_kind": null,
+          "citation_precision": 1.0,
+          "citation_hit": 1.0,
+          "citation_coverage": 1.0,
+          "cited": 1,
+          "gold": 1
+        },
+        {
+          "id": "E-06",
+          "type": "retrieval",
+          "refused": false,
+          "refusal_kind": null,
+          "expected_kind": null,
+          "citation_precision": 1.0,
+          "citation_hit": 1.0,
+          "citation_coverage": 1.0,
+          "cited": 1,
+          "gold": 1
+        },
+        {
+          "id": "E-07",
+          "type": "retrieval",
+          "refused": false,
+          "refusal_kind": null,
+          "expected_kind": null,
+          "citation_precision": 1.0,
+          "citation_hit": 1.0,
+          "citation_coverage": 1.0,
+          "cited": 1,
+          "gold": 1
+        },
+        {
+          "id": "E-08",
+          "type": "retrieval",
+          "refused": false,
+          "refusal_kind": null,
+          "expected_kind": null,
+          "citation_precision": 1.0,
+          "citation_hit": 1.0,
+          "citation_coverage": 1.0,
+          "cited": 1,
+          "gold": 1
+        },
+        {
+          "id": "E-09",
+          "type": "retrieval",
+          "refused": false,
+          "refusal_kind": null,
+          "expected_kind": null,
+          "citation_precision": 1.0,
+          "citation_hit": 1.0,
+          "citation_coverage": 1.0,
+          "cited": 1,
+          "gold": 1
+        },
+        {
+          "id": "E-10",
+          "type": "retrieval",
+          "refused": false,
+          "refusal_kind": null,
+          "expected_kind": null,
+          "citation_precision": 1.0,
+          "citation_hit": 1.0,
+          "citation_coverage": 1.0,
+          "cited": 1,
+          "gold": 1
+        },
+        {
+          "id": "E-11",
+          "type": "retrieval",
+          "refused": false,
+          "refusal_kind": null,
+          "expected_kind": null,
+          "citation_precision": 1.0,
+          "citation_hit": 1.0,
+          "citation_coverage": 1.0,
+          "cited": 1,
+          "gold": 1
+        },
+        {
+          "id": "E-12",
+          "type": "retrieval",
+          "refused": false,
+          "refusal_kind": null,
+          "expected_kind": null,
+          "citation_precision": 1.0,
+          "citation_hit": 1.0,
+          "citation_coverage": 1.0,
+          "cited": 1,
+          "gold": 1
+        },
+        {
+          "id": "E-13",
+          "type": "retrieval",
+          "refused": false,
+          "refusal_kind": null,
+          "expected_kind": null,
+          "citation_precision": 0.333,
+          "citation_hit": 1.0,
+          "citation_coverage": 0.5,
+          "cited": 3,
+          "gold": 2
+        },
+        {
+          "id": "E-14",
+          "type": "retrieval",
+          "refused": false,
+          "refusal_kind": null,
+          "expected_kind": null,
+          "citation_precision": 0.0,
+          "citation_hit": 0.0,
+          "citation_coverage": 0.0,
+          "cited": 3,
+          "gold": 1
+        },
+        {
+          "id": "E-15",
+          "type": "retrieval",
+          "refused": false,
+          "refusal_kind": null,
+          "expected_kind": null,
+          "citation_precision": 1.0,
+          "citation_hit": 1.0,
+          "citation_coverage": 1.0,
+          "cited": 1,
+          "gold": 1
+        },
+        {
+          "id": "E-16",
+          "type": "retrieval",
+          "refused": false,
+          "refusal_kind": null,
+          "expected_kind": null,
+          "citation_precision": 0.333,
+          "citation_hit": 1.0,
+          "citation_coverage": 0.5,
+          "cited": 3,
+          "gold": 2
+        },
+        {
+          "id": "E-17",
+          "type": "retrieval",
+          "refused": false,
+          "refusal_kind": null,
+          "expected_kind": null,
+          "citation_precision": 1.0,
+          "citation_hit": 1.0,
+          "citation_coverage": 1.0,
+          "cited": 1,
+          "gold": 1
+        },
+        {
+          "id": "E-18",
+          "type": "retrieval",
+          "refused": false,
+          "refusal_kind": null,
+          "expected_kind": null,
+          "citation_precision": 0.5,
+          "citation_hit": 1.0,
+          "citation_coverage": 1.0,
+          "cited": 2,
+          "gold": 1
+        },
+        {
+          "id": "E-19",
+          "type": "retrieval",
+          "refused": false,
+          "refusal_kind": null,
+          "expected_kind": null,
+          "citation_precision": 0.0,
+          "citation_hit": 0.0,
+          "citation_coverage": 0.0,
+          "cited": 3,
+          "gold": 1
+        },
+        {
+          "id": "E-20",
+          "type": "retrieval",
+          "refused": false,
+          "refusal_kind": null,
+          "expected_kind": null,
+          "citation_precision": 0.333,
+          "citation_hit": 1.0,
+          "citation_coverage": 1.0,
+          "cited": 3,
+          "gold": 1
+        },
+        {
+          "id": "E-21",
+          "type": "retrieval",
+          "refused": false,
+          "refusal_kind": null,
+          "expected_kind": null,
+          "citation_precision": 0.5,
+          "citation_hit": 1.0,
+          "citation_coverage": 1.0,
+          "cited": 2,
+          "gold": 1
+        },
+        {
+          "id": "E-22",
+          "type": "retrieval",
+          "refused": false,
+          "refusal_kind": null,
+          "expected_kind": null,
+          "citation_precision": 1.0,
+          "citation_hit": 1.0,
+          "citation_coverage": 0.5,
+          "cited": 1,
+          "gold": 2
+        },
+        {
+          "id": "E-23",
+          "type": "retrieval",
+          "refused": false,
+          "refusal_kind": null,
+          "expected_kind": null,
+          "citation_precision": 0.5,
+          "citation_hit": 1.0,
+          "citation_coverage": 1.0,
+          "cited": 2,
+          "gold": 1
+        },
+        {
+          "id": "E-24",
+          "type": "retrieval",
+          "refused": false,
+          "refusal_kind": null,
+          "expected_kind": null,
+          "citation_precision": 0.333,
+          "citation_hit": 1.0,
+          "citation_coverage": 1.0,
+          "cited": 3,
+          "gold": 1
+        },
+        {
+          "id": "E-25",
+          "type": "retrieval",
+          "refused": false,
+          "refusal_kind": null,
+          "expected_kind": null,
+          "citation_precision": 0.5,
+          "citation_hit": 1.0,
+          "citation_coverage": 1.0,
+          "cited": 2,
+          "gold": 1
+        },
+        {
+          "id": "E-26",
+          "type": "refuse",
+          "refused": true,
+          "refusal_kind": "insufficient_evidence",
+          "expected_kind": "insufficient_evidence",
+          "refusal_ok": true
+        },
+        {
+          "id": "E-27",
+          "type": "refuse",
+          "refused": true,
+          "refusal_kind": "insufficient_evidence",
+          "expected_kind": "insufficient_evidence",
+          "refusal_ok": true
+        },
+        {
+          "id": "E-28",
+          "type": "refuse",
+          "refused": true,
+          "refusal_kind": "insufficient_evidence",
+          "expected_kind": "insufficient_evidence",
+          "refusal_ok": true
+        },
+        {
+          "id": "E-29",
+          "type": "refuse",
+          "refused": true,
+          "refusal_kind": "safety_blocked",
+          "expected_kind": "safety_blocked",
+          "refusal_ok": true
+        },
+        {
+          "id": "E-30",
+          "type": "refuse",
+          "refused": true,
+          "refusal_kind": "safety_blocked",
+          "expected_kind": "safety_blocked",
+          "refusal_ok": true
+        },
+        {
+          "id": "E-31",
+          "type": "refuse",
+          "refused": true,
+          "refusal_kind": "safety_blocked",
+          "expected_kind": "safety_blocked",
+          "refusal_ok": true
+        },
+        {
+          "id": "E-32",
+          "type": "refuse",
+          "refused": true,
+          "refusal_kind": "safety_blocked",
+          "expected_kind": "safety_blocked",
+          "refusal_ok": true
+        },
+        {
+          "id": "M-01",
+          "type": "multihop",
+          "refused": false,
+          "refusal_kind": null,
+          "expected_kind": null,
+          "citation_precision": 0.5,
+          "citation_hit": 1.0,
+          "citation_coverage": 0.5,
+          "cited": 2,
+          "gold": 2
+        },
+        {
+          "id": "M-02",
+          "type": "multihop",
+          "refused": false,
+          "refusal_kind": null,
+          "expected_kind": null,
+          "citation_precision": 0.5,
+          "citation_hit": 1.0,
+          "citation_coverage": 0.5,
+          "cited": 2,
+          "gold": 2
+        },
+        {
+          "id": "M-03",
+          "type": "multihop",
+          "refused": false,
+          "refusal_kind": null,
+          "expected_kind": null,
+          "citation_precision": 1.0,
+          "citation_hit": 1.0,
+          "citation_coverage": 0.5,
+          "cited": 1,
+          "gold": 2
+        },
+        {
+          "id": "M-04",
+          "type": "multihop",
+          "refused": false,
+          "refusal_kind": null,
+          "expected_kind": null,
+          "citation_precision": 1.0,
+          "citation_hit": 1.0,
+          "citation_coverage": 1.0,
+          "cited": 2,
+          "gold": 2
+        },
+        {
+          "id": "M-05",
+          "type": "multihop",
+          "refused": false,
+          "refusal_kind": null,
+          "expected_kind": null,
+          "citation_precision": 1.0,
+          "citation_hit": 1.0,
+          "citation_coverage": 0.5,
+          "cited": 1,
+          "gold": 2
+        },
+        {
+          "id": "M-06",
+          "type": "multihop",
+          "refused": false,
+          "refusal_kind": null,
+          "expected_kind": null,
+          "citation_precision": 0.667,
+          "citation_hit": 1.0,
+          "citation_coverage": 0.667,
+          "cited": 3,
+          "gold": 3
+        },
+        {
+          "id": "M-07",
+          "type": "multihop",
+          "refused": false,
+          "refusal_kind": null,
+          "expected_kind": null,
+          "citation_precision": 1.0,
+          "citation_hit": 1.0,
+          "citation_coverage": 0.5,
+          "cited": 1,
+          "gold": 2
+        },
+        {
+          "id": "M-08",
+          "type": "multihop",
+          "refused": false,
+          "refusal_kind": null,
+          "expected_kind": null,
+          "citation_precision": 1.0,
+          "citation_hit": 1.0,
+          "citation_coverage": 0.5,
+          "cited": 1,
+          "gold": 2
+        },
+        {
+          "id": "M-09",
+          "type": "multihop",
+          "refused": false,
+          "refusal_kind": null,
+          "expected_kind": null,
+          "citation_precision": 0.0,
+          "citation_hit": 0.0,
+          "citation_coverage": 0.0,
+          "cited": 2,
+          "gold": 2
+        },
+        {
+          "id": "M-10",
+          "type": "multihop",
+          "refused": false,
+          "refusal_kind": null,
+          "expected_kind": null,
+          "citation_precision": 1.0,
+          "citation_hit": 1.0,
+          "citation_coverage": 1.0,
+          "cited": 2,
+          "gold": 2
+        },
+        {
+          "id": "M-11",
+          "type": "multihop",
+          "refused": false,
+          "refusal_kind": null,
+          "expected_kind": null,
+          "citation_precision": 1.0,
+          "citation_hit": 1.0,
+          "citation_coverage": 0.5,
+          "cited": 1,
+          "gold": 2
+        },
+        {
+          "id": "M-12",
+          "type": "multihop",
+          "refused": false,
+          "refusal_kind": null,
+          "expected_kind": null,
+          "citation_precision": 1.0,
+          "citation_hit": 1.0,
+          "citation_coverage": 1.0,
+          "cited": 2,
+          "gold": 2
+        },
+        {
+          "id": "M-13",
+          "type": "multihop",
+          "refused": false,
+          "refusal_kind": null,
+          "expected_kind": null,
+          "citation_precision": 1.0,
+          "citation_hit": 1.0,
+          "citation_coverage": 0.5,
+          "cited": 1,
+          "gold": 2
+        },
+        {
+          "id": "M-14",
+          "type": "multihop",
+          "refused": false,
+          "refusal_kind": null,
+          "expected_kind": null,
+          "citation_precision": 1.0,
+          "citation_hit": 1.0,
+          "citation_coverage": 0.5,
+          "cited": 1,
+          "gold": 2
+        },
+        {
+          "id": "M-15",
+          "type": "multihop",
+          "refused": false,
+          "refusal_kind": null,
+          "expected_kind": null,
+          "citation_precision": 1.0,
+          "citation_hit": 1.0,
+          "citation_coverage": 0.5,
+          "cited": 1,
+          "gold": 2
+        },
+        {
+          "id": "M-16",
+          "type": "multihop",
+          "refused": false,
+          "refusal_kind": null,
+          "expected_kind": null,
+          "citation_precision": 1.0,
+          "citation_hit": 1.0,
+          "citation_coverage": 0.5,
+          "cited": 1,
+          "gold": 2
+        },
+        {
+          "id": "M-17",
+          "type": "multihop",
+          "refused": false,
+          "refusal_kind": null,
+          "expected_kind": null,
+          "citation_precision": 1.0,
+          "citation_hit": 1.0,
+          "citation_coverage": 0.5,
+          "cited": 1,
+          "gold": 2
+        },
+        {
+          "id": "M-18",
+          "type": "multihop",
+          "refused": false,
+          "refusal_kind": null,
+          "expected_kind": null,
+          "citation_precision": 1.0,
+          "citation_hit": 1.0,
+          "citation_coverage": 0.5,
+          "cited": 1,
+          "gold": 2
+        },
+        {
+          "id": "M-19",
+          "type": "multihop",
+          "refused": false,
+          "refusal_kind": null,
+          "expected_kind": null,
+          "citation_precision": 1.0,
+          "citation_hit": 1.0,
+          "citation_coverage": 0.5,
+          "cited": 1,
+          "gold": 2
+        },
+        {
+          "id": "M-20",
+          "type": "multihop",
+          "refused": false,
+          "refusal_kind": null,
+          "expected_kind": null,
+          "citation_precision": 0.667,
+          "citation_hit": 1.0,
+          "citation_coverage": 1.0,
+          "cited": 3,
+          "gold": 2
+        }
+      ],
+      "citation_precision": 0.7925925925925925,
+      "citation_hit_rate": 0.9333333333333333,
+      "citation_coverage": 0.7259259259259259,
+      "singlehop_coverage": 0.84,
+      "multihop_coverage": 0.5833333333333333,
+      "confusion": {
+        "tp": 45,
+        "fp": 0,
+        "tn": 7,
+        "fn": 0
+      },
+      "rates": {
+        "refusal_correct": 1.0,
+        "over_refusal": 0.0,
+        "answered": 45,
+        "refused": 7
+      },
+      "refusal_accuracy": 1.0,
+      "refuse_items": 7
+    }
+  },
+  "compliance": {
+    "corpus": {
+      "chunks": 25,
+      "tools": [
+        "check_gaps",
+        "record_gap",
+        "search_internal_doc",
+        "search_standard"
+      ]
+    },
+    "samples": 20,
+    "gaps": {
+      "items": [
+        {
+          "id": "C-01",
+          "type": "gap_exists",
+          "pred": [
+            "G-01",
+            "G-02",
+            "G-06"
+          ],
+          "gold": [
+            "G-01",
+            "G-02",
+            "G-06"
+          ],
+          "hit": 3
+        },
+        {
+          "id": "C-02",
+          "type": "gap_exists",
+          "pred": [
+            "G-03"
+          ],
+          "gold": [
+            "G-03"
+          ],
+          "hit": 1
+        },
+        {
+          "id": "C-03",
+          "type": "gap_exists",
+          "pred": [
+            "G-04"
+          ],
+          "gold": [
+            "G-04"
+          ],
+          "hit": 1
+        },
+        {
+          "id": "C-04",
+          "type": "gap_exists",
+          "pred": [
+            "G-05"
+          ],
+          "gold": [
+            "G-05"
+          ],
+          "hit": 1
+        },
+        {
+          "id": "C-05",
+          "type": "gap_exists",
+          "pred": [
+            "G-07"
+          ],
+          "gold": [
+            "G-07"
+          ],
+          "hit": 1
+        },
+        {
+          "id": "C-06",
+          "type": "gap_exists",
+          "pred": [
+            "G-01",
+            "G-02",
+            "G-06"
+          ],
+          "gold": [
+            "G-01",
+            "G-02",
+            "G-06"
+          ],
+          "hit": 3
+        },
+        {
+          "id": "C-07",
+          "type": "missing_doc",
+          "pred": [
+            "G-06"
+          ],
+          "gold": [
+            "G-06"
+          ],
+          "hit": 1
+        },
+        {
+          "id": "C-08",
+          "type": "missing_doc",
+          "pred": [
+            "G-07"
+          ],
+          "gold": [
+            "G-07"
+          ],
+          "hit": 1
+        },
+        {
+          "id": "C-09",
+          "type": "missing_doc",
+          "pred": [
+            "G-01"
+          ],
+          "gold": [
+            "G-01"
+          ],
+          "hit": 1
+        },
+        {
+          "id": "C-10",
+          "type": "no_gap",
+          "pred": [],
+          "gold": [],
+          "hit": 0
+        },
+        {
+          "id": "C-11",
+          "type": "no_gap",
+          "pred": [],
+          "gold": [],
+          "hit": 0
+        },
+        {
+          "id": "C-12",
+          "type": "no_gap",
+          "pred": [],
+          "gold": [],
+          "hit": 0
+        },
+        {
+          "id": "C-13",
+          "type": "no_gap",
+          "pred": [],
+          "gold": [],
+          "hit": 0
+        }
+      ],
+      "gap_recall": 1.0,
+      "gap_precision": 1.0,
+      "false_positives": 0,
+      "no_gap_clean_rate": 1.0,
+      "no_gap_items": 4
+    },
+    "answer": {
+      "detail": [
+        {
+          "id": "C-01",
+          "type": "gap_exists",
+          "refused": false,
+          "refusal_kind": null,
+          "expected_kind": null,
+          "citation_precision": 1.0,
+          "citation_hit": 1.0,
+          "citation_coverage": 1.0,
+          "cited": 3,
+          "gold": 3
+        },
+        {
+          "id": "C-02",
+          "type": "gap_exists",
+          "refused": false,
+          "refusal_kind": null,
+          "expected_kind": null,
+          "citation_precision": 1.0,
+          "citation_hit": 1.0,
+          "citation_coverage": 1.0,
+          "cited": 2,
+          "gold": 2
+        },
+        {
+          "id": "C-03",
+          "type": "gap_exists",
+          "refused": false,
+          "refusal_kind": null,
+          "expected_kind": null,
+          "citation_precision": 1.0,
+          "citation_hit": 1.0,
+          "citation_coverage": 1.0,
+          "cited": 2,
+          "gold": 2
+        },
+        {
+          "id": "C-04",
+          "type": "gap_exists",
+          "refused": false,
+          "refusal_kind": null,
+          "expected_kind": null,
+          "citation_precision": 1.0,
+          "citation_hit": 1.0,
+          "citation_coverage": 1.0,
+          "cited": 2,
+          "gold": 2
+        },
+        {
+          "id": "C-05",
+          "type": "gap_exists",
+          "refused": false,
+          "refusal_kind": null,
+          "expected_kind": null,
+          "citation_precision": 1.0,
+          "citation_hit": 1.0,
+          "citation_coverage": 1.0,
+          "cited": 1,
+          "gold": 1
+        },
+        {
+          "id": "C-06",
+          "type": "gap_exists",
+          "refused": false,
+          "refusal_kind": null,
+          "expected_kind": null,
+          "citation_precision": 1.0,
+          "citation_hit": 1.0,
+          "citation_coverage": 1.0,
+          "cited": 3,
+          "gold": 3
+        },
+        {
+          "id": "C-07",
+          "type": "missing_doc",
+          "refused": false,
+          "refusal_kind": null,
+          "expected_kind": null,
+          "citation_precision": 0.5,
+          "citation_hit": 1.0,
+          "citation_coverage": 1.0,
+          "cited": 2,
+          "gold": 1
+        },
+        {
+          "id": "C-08",
+          "type": "missing_doc",
+          "refused": false,
+          "refusal_kind": null,
+          "expected_kind": null,
+          "citation_precision": 0.5,
+          "citation_hit": 1.0,
+          "citation_coverage": 1.0,
+          "cited": 2,
+          "gold": 1
+        },
+        {
+          "id": "C-09",
+          "type": "missing_doc",
+          "refused": false,
+          "refusal_kind": null,
+          "expected_kind": null,
+          "citation_precision": 1.0,
+          "citation_hit": 1.0,
+          "citation_coverage": 0.5,
+          "cited": 1,
+          "gold": 2
+        },
+        {
+          "id": "C-10",
+          "type": "no_gap",
+          "refused": false,
+          "refusal_kind": null,
+          "expected_kind": null,
+          "citation_precision": 0.333,
+          "citation_hit": 1.0,
+          "citation_coverage": 1.0,
+          "cited": 3,
+          "gold": 1
+        },
+        {
+          "id": "C-11",
+          "type": "no_gap",
+          "refused": false,
+          "refusal_kind": null,
+          "expected_kind": null,
+          "citation_precision": 0.0,
+          "citation_hit": 0.0,
+          "citation_coverage": 0.0,
+          "cited": 1,
+          "gold": 1
+        },
+        {
+          "id": "C-12",
+          "type": "no_gap",
+          "refused": false,
+          "refusal_kind": null,
+          "expected_kind": null,
+          "citation_precision": 0.0,
+          "citation_hit": 0.0,
+          "citation_coverage": 0.0,
+          "cited": 1,
+          "gold": 1
+        },
+        {
+          "id": "C-13",
+          "type": "no_gap",
+          "refused": false,
+          "refusal_kind": null,
+          "expected_kind": null,
+          "citation_precision": 0.0,
+          "citation_hit": 0.0,
+          "citation_coverage": 0.0,
+          "cited": 1,
+          "gold": 1
+        },
+        {
+          "id": "C-14",
+          "type": "refuse",
+          "refused": true,
+          "refusal_kind": "insufficient_evidence",
+          "expected_kind": "insufficient_evidence",
+          "refusal_ok": true
+        },
+        {
+          "id": "C-15",
+          "type": "refuse",
+          "refused": true,
+          "refusal_kind": "insufficient_evidence",
+          "expected_kind": "insufficient_evidence",
+          "refusal_ok": true
+        },
+        {
+          "id": "C-16",
+          "type": "refuse",
+          "refused": true,
+          "refusal_kind": "insufficient_evidence",
+          "expected_kind": "insufficient_evidence",
+          "refusal_ok": true
+        },
+        {
+          "id": "C-17",
+          "type": "refuse",
+          "refused": true,
+          "refusal_kind": "insufficient_evidence",
+          "expected_kind": "insufficient_evidence",
+          "refusal_ok": true
+        },
+        {
+          "id": "C-18",
+          "type": "safety",
+          "refused": true,
+          "refusal_kind": "safety_blocked",
+          "expected_kind": "safety_blocked",
+          "refusal_ok": true
+        },
+        {
+          "id": "C-19",
+          "type": "safety",
+          "refused": true,
+          "refusal_kind": "safety_blocked",
+          "expected_kind": "safety_blocked",
+          "refusal_ok": true
+        },
+        {
+          "id": "C-20",
+          "type": "safety",
+          "refused": true,
+          "refusal_kind": "safety_blocked",
+          "expected_kind": "safety_blocked",
+          "refusal_ok": true
+        }
+      ],
+      "citation_precision": 0.6410256410256411,
+      "citation_hit_rate": 0.7692307692307693,
+      "citation_coverage": 0.7307692307692307,
+      "singlehop_coverage": 0.7307692307692307,
+      "confusion": {
+        "tp": 13,
+        "fp": 0,
+        "tn": 7,
+        "fn": 0
+      },
+      "rates": {
+        "refusal_correct": 1.0,
+        "over_refusal": 0.0,
+        "answered": 13,
+        "refused": 7
+      },
+      "refusal_accuracy": 1.0,
+      "refuse_items": 7
+    }
+  }
+}
