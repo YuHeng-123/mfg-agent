@@ -119,6 +119,7 @@
           color:var(--red);font-size:13px;display:none}
   .hint{font-size:11px;color:var(--ink3);margin-top:6px}
 
+  .keybar[hidden]{display:none}
   .keybar{margin:12px 18px 0;padding:9px 14px;border:1px solid var(--line2);border-radius:10px;
           background:var(--amber-bg);display:flex;align-items:center;gap:9px;flex-wrap:wrap;font-size:12.5px}
   .keybar .tag{font-size:11px;font-weight:600;border:1px solid currentColor;border-radius:4px;
@@ -241,6 +242,23 @@ const KEY_STORE = "mfg_api_key";
 let role = null;
 const getKey = () => localStorage.getItem(KEY_STORE) || "";
 
+/* ?key=xxx 直接带上（演示、截图、内嵌用）。存进 localStorage，之后刷新也不用再填。 */
+(function absorbKeyFromUrl(){
+  const k = new URLSearchParams(location.search).get("key");
+  if (k) localStorage.setItem(KEY_STORE, k.trim());
+})();
+
+/* 公开演示模式：服务端开了 MFG_DEMO_MODE 时，/api/auth/demo 会发一把只读 key。
+   没有它，任何访客打开页面只会看到"请输入访问密钥"——那等于把演示挡在门外。 */
+async function fetchDemoKey(){
+  try{
+    const res = await fetch("/api/auth/demo");
+    if (!res.ok) return "";
+    const j = await res.json();
+    return j.key || "";
+  }catch(e){ return ""; }
+}
+
 async function apiFetch(path, opts = {}){
   const headers = Object.assign({}, opts.headers || {});
   const k = getKey();
@@ -260,7 +278,12 @@ function showKeyBar(msg){
 function hideKeyBar(){ $("keybar").hidden = true; }
 
 async function checkAuth(){
-  const res = await apiFetch("/api/auth/whoami");
+  let res = await apiFetch("/api/auth/whoami");
+  if (res.status === 401 && !getKey()){
+    // 没有 key：先问服务端要一把只读的演示 key（开了 MFG_DEMO_MODE 才有）
+    const demo = await fetchDemoKey();
+    if (demo){ localStorage.setItem(KEY_STORE, demo); res = await apiFetch("/api/auth/whoami"); }
+  }
   if (res.status === 401){ showKeyBar("请输入访问密钥（首次使用请向管理员索取）"); return false; }
   const j = await res.json();
   role = j.role;
@@ -508,9 +531,16 @@ async function boot(){
     else { localStorage.removeItem(KEY_STORE); }
   };
 
-  await checkAuth();
+  const authed = await checkAuth();
   loadRecords();
   loadStats();
+
+  // ?ask=... 打开即提问（演示与深链用）；?domain= 先切域
+  const params = new URLSearchParams(location.search);
+  const wantDomain = params.get("domain");
+  if (wantDomain && ["equipment", "compliance"].includes(wantDomain)) setDomain(wantDomain);
+  const preAsk = params.get("ask");
+  if (authed && preAsk){ $("q").value = preAsk; ask(); }
 }
 
 async function loadStats(){

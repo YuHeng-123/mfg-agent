@@ -116,3 +116,31 @@ def test_issued_key_works_and_is_listed(auth_on):
     assert any(k["name"] == "班组A" and k["role"] == "user" for k in listed)
     # 列表里不能出现 key 本身
     assert all("key" not in k or k["key"] is None for k in listed)
+
+
+def test_demo_endpoint_is_404_when_demo_mode_is_off(auth_on):
+    client = TestClient(app)
+    res = client.get("/api/auth/demo")
+    assert res.status_code == 404
+
+
+def test_demo_mode_hands_out_a_read_only_key(auth_on, monkeypatch):
+    """演示站不能一开门就让人填 key；但发出去的 key 只能提问，不能写。"""
+
+    monkeypatch.setattr(settings, "demo_mode", True)
+    keys.ensure_demo_key()
+
+    client = TestClient(app)
+    issued = client.get("/api/auth/demo").json()
+    assert issued["role"] == "user"
+    assert issued["key"].startswith("mfg_user_")
+
+    demo_headers = {"X-API-Key": issued["key"]}
+    assert client.post("/api/ask", json=ASK, headers=demo_headers).status_code == 200
+
+    draft = client.post(
+        "/api/tickets/draft",
+        json={"device_id": "AC-300-03", "fault_code": "E05", "symptom": "排气温度高"},
+        headers=demo_headers,
+    )
+    assert draft.status_code == 403, "演示 key 不该能写"

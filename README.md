@@ -296,6 +296,16 @@ uvicorn app.main:app --port 8000         # 打开 http://127.0.0.1:8000 即是�
 ```
 
 容器：`cp .env.example .env`（改掉两个 key）→ `docker compose up -d --build` → <http://localhost:8080>。
+
+**演示/试用模式**：`MFG_DEMO_MODE=1` 启动时自动发一把**只读** key（role=user，只能提问、不能写），
+页面打开即用，不用手动填；换进程就换 key。页面还支持深链：
+
+```
+/?ask=3 号线空压机报 E05，排气温度 118℃，怎么处理？     打开就把这句话问出来
+/?domain=compliance&ask=对照新版 7.1.6 组织知识…          先切到文件体检域再问
+/?key=<你的 key>                                        临时填 key（存 localStorage）
+```
+
 运维、排障、备份见 `docs/ops.md`。
 
 用真模型（可选，不影响上面的可复现性）：

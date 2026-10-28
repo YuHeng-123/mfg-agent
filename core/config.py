@@ -86,6 +86,11 @@ class Settings:
     state_db: Path = field(
         default_factory=lambda: Path(os.environ.get("STATE_DB", str(DATA_DIR / "state.sqlite3")))
     )
+    # 公开演示模式：启动时自动发一把只读 key 并允许页面自取。
+    # 默认关闭——线上真环境不该让任何人拿 key 进来提问。
+    demo_mode: bool = field(
+        default_factory=lambda: os.environ.get("MFG_DEMO_MODE", "0") not in ("0", "", "false")
+    )
 
     @property
     def real_provider_ready(self) -> bool:

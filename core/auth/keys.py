@@ -119,3 +119,25 @@ def clear() -> int:
     with _LOCK, _connect() as conn:
         cur = conn.execute("DELETE FROM api_keys")
     return int(cur.rowcount or 0)
+
+
+# ---- 公开演示用的只读 key ------------------------------------------------
+# 演示站要是先弹一个"请输入访问密钥"，访客就走了。所以演示模式下服务端自己发一把
+# role=user 的 key（只能提问和看自己的审计，写操作仍然要 admin），页面启动时自动取。
+# 每次重启换一把：旧的自然失效，不需要额外的清理任务。
+_DEMO_KEY: str | None = None
+
+
+def ensure_demo_key() -> str:
+    """重建 demo key 并返回明文。只在 MFG_DEMO_MODE=1 时由启动流程调用。"""
+
+    global _DEMO_KEY
+    init()
+    with _LOCK, _connect() as conn:
+        conn.execute("DELETE FROM api_keys WHERE name = 'demo'")
+    _DEMO_KEY = issue("demo", "user")
+    return _DEMO_KEY
+
+
+def demo_key() -> str | None:
+    return _DEMO_KEY

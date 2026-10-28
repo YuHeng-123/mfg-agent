@@ -21,7 +21,8 @@ from core.auth import keys
 from core.config import settings
 
 # 探测类接口不鉴权：K8s 探针和 Prometheus 抓取不该带业务 key。
-OPEN_PATHS = ("/api/metrics",)
+# 演示 key 的领取口也不鉴权——它发出去的就是一把只读 key，本身没有可保护的东西。
+OPEN_PATHS = ("/api/metrics", "/api/auth/demo")
 OPEN_PREFIXES = ("/healthz", "/metrics", "/static", "/docs", "/openapi.json", "/redoc")
 
 

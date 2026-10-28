@@ -56,6 +56,9 @@ async def lifespan(_app: FastAPI):
 
     status = provider_status()
     print(f"[boot] provider={status['effective']}：{status['reason']}")
+    if settings.demo_mode:
+        keys.ensure_demo_key()
+        print("[boot] 演示模式：已发放只读 demo key，页面打开即用（写操作仍要 admin）")
     yield
 
 

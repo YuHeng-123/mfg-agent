@@ -180,6 +180,20 @@ def close_record(
         raise HTTPException(status_code=409, detail=str(exc)) from exc
 
 
+@router.get("/api/auth/demo")
+def demo_key() -> dict:
+    """公开演示站用：返回一把只读 key（role=user），仅供页面自动登录。
+
+    只有 `MFG_DEMO_MODE=1` 时才有值；正式部署里这个接口返回 404。
+    写操作仍然需要 admin，所以拿到这把 key 也只能提问。
+    """
+
+    raw = keys.demo_key()
+    if not settings.demo_mode or not raw:
+        raise HTTPException(status_code=404, detail="演示模式未开启")
+    return {"key": raw, "role": "user", "note": "只读演示 key，重启即失效；写操作需要管理员权限"}
+
+
 @router.get("/api/auth/whoami")
 def whoami(request: Request) -> dict:
     """页面用这个判断"要不要弹输入框要 key"。
