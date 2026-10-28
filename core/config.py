@@ -34,10 +34,10 @@ class Settings:
     #   support_score_ratio  drop anything scoring below this fraction of the best
     #                        hit. It exists because a paragraph sharing one word
     #                        with the question used to end up in the answer.
-    #   support_diverse      prefer paragraphs from sections not yet used. This is
-    #                        what lets a multi-hop question ("how do I fix it, and
-    #                        which spare part") cite both the procedure and the
-    #                        spare-part table, whose score is far below the top hit.
+    #   support_code_mode    when the question names a fault code, "filter" keeps
+    #                        only that code's paragraphs, "prefer" merely reorders
+    #                        them. "prefer" is what lets a multi-hop answer cite
+    #                        both the procedure and the spare-part table.
     support_score_ratio: float = field(default_factory=lambda: _env_float("SUPPORT_SCORE_RATIO", 0.7))
     # When the question names a fault code, paragraphs about that code should come
     # first. "filter" drops every other paragraph, which is right for a single-hop
@@ -64,6 +64,24 @@ class Settings:
     # Simulated per-tool latency used only to make the parallel-vs-serial
     # argument measurable in a demo. Zero by default; README states it is fake.
     tool_latency_ms: int = field(default_factory=lambda: int(_env_float("TOOL_LATENCY_MS", 0)))
+    # Quota, per caller. Per-minute guards bursts, per-day guards a slow drip.
+    # In-process counters; a second replica would need Redis, stated in ops.md.
+    rate_limit_enabled: bool = field(
+        default_factory=lambda: os.environ.get("RATE_LIMIT_ENABLED", "1") not in ("0", "", "false")
+    )
+    rate_limit_per_minute: int = field(
+        default_factory=lambda: int(_env_float("RATE_LIMIT_PER_MINUTE", 60))
+    )
+    rate_limit_per_day: int = field(default_factory=lambda: int(_env_float("RATE_LIMIT_PER_DAY", 2000)))
+    # Auth. Off by default only for the eval/test path; the server profile turns
+    # it on. Keys are seeded on first start and only their SHA-256 is stored.
+    auth_enabled: bool = field(
+        default_factory=lambda: os.environ.get("AUTH_ENABLED", "1") not in ("0", "", "false")
+    )
+    bootstrap_admin_key: str = field(
+        default_factory=lambda: os.environ.get("MFG_ADMIN_KEY", "dev-admin-key")
+    )
+    bootstrap_user_key: str = field(default_factory=lambda: os.environ.get("MFG_USER_KEY", "dev-user-key"))
 
     @property
     def real_provider_ready(self) -> bool:
