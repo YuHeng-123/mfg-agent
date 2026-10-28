@@ -2,3 +2,5 @@ fastapi>=0.110
 uvicorn[standard]>=0.27
 pydantic>=2.6
 httpx>=0.27
+# 运行期就要它：服务启动时要解析 PDF 手册（不只是生成脚本用）
+pymupdf>=1.24

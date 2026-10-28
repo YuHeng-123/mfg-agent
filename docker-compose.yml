@@ -1,0 +1,35 @@
+# 换台机器：cp .env.example .env（改掉两个 key）→ docker compose up
+services:
+  app:
+    build: .
+    image: mfg-agent:local
+    ports:
+      - "8080:8080"
+    environment:
+      # 试点前必须换掉这两个。默认值只是为了让"第一次 up 就能打开页面"。
+      MFG_ADMIN_KEY: ${MFG_ADMIN_KEY:-dev-admin-key}
+      MFG_USER_KEY: ${MFG_USER_KEY:-dev-user-key}
+      PROVIDER: ${PROVIDER:-stub}
+      RATE_LIMIT_PER_MINUTE: ${RATE_LIMIT_PER_MINUTE:-60}
+      RATE_LIMIT_PER_DAY: ${RATE_LIMIT_PER_DAY:-2000}
+      STATE_DB: /state/state.sqlite3
+      TZ: Asia/Shanghai
+    volumes:
+      # 审计、工单、key 都在这个文件里：重建镜像不该把它们清掉
+      - state:/state
+      # 厂商真手册不进镜像（版权），本机放这里挂进去即可
+      - ./data/equipment/manuals/real:/app/data/equipment/manuals/real:ro
+    restart: unless-stopped
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8080/healthz').status==200 else 1)"
+      interval: 15s
+      timeout: 3s
+      start_period: 40s
+      retries: 3
+
+volumes:
+  state:

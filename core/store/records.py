@@ -17,9 +17,11 @@ import threading
 from datetime import datetime
 from pathlib import Path
 
-from core.config import DATA_DIR
+from core.config import settings
 
-DB_PATH: Path = DATA_DIR / "state.sqlite3"
+# 默认 data/state.sqlite3；容器里用 STATE_DB 指到挂载卷上，
+# 这样重建镜像不会连审计一起清掉。测试会 monkeypatch 这个变量。
+DB_PATH: Path = settings.state_db
 
 DRAFT = "draft"
 CONFIRMED = "confirmed"

@@ -1,0 +1,10 @@
+.git
+.pytest_cache
+__pycache__
+*.pyc
+.env
+*.log
+data/state.sqlite3
+data/equipment/manuals/real/*.pdf
+evals/reports/*.json
+!evals/reports/.keep

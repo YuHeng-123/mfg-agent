@@ -10,7 +10,6 @@ ROOT = Path(__file__).resolve().parent.parent
 DATA_DIR = ROOT / "data"
 REPORTS_DIR = ROOT / "evals" / "reports"
 
-
 def _env_float(name: str, default: float) -> float:
     try:
         return float(os.environ[name])
@@ -82,6 +81,11 @@ class Settings:
         default_factory=lambda: os.environ.get("MFG_ADMIN_KEY", "dev-admin-key")
     )
     bootstrap_user_key: str = field(default_factory=lambda: os.environ.get("MFG_USER_KEY", "dev-user-key"))
+    # 运行期状态（records / audit / api_keys）落哪。容器里指到挂载卷上，
+    # 这样重建镜像不会把审计记录一起删掉。
+    state_db: Path = field(
+        default_factory=lambda: Path(os.environ.get("STATE_DB", str(DATA_DIR / "state.sqlite3")))
+    )
 
     @property
     def real_provider_ready(self) -> bool:
