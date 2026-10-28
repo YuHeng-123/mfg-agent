@@ -62,7 +62,7 @@ def search_manual(query: str, model_id: str | None = None, top_k: int = 5) -> To
     unknowns = [
         code
         for code in re.findall(r"\b(AX\d{3}|BP\d{4}|HE\d{3})\b", query.upper())
-        if code not in {m["model_id"] for m in store.MANUAL_META.values()}
+        if code not in {m["model_id"] for m in store.manual_meta().values()}
     ]
 
     citations = []

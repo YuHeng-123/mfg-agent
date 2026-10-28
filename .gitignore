@@ -6,3 +6,6 @@ __pycache__/
 *.log
 # 写操作的运行时状态（SQLite），不是语料，不进仓库
 data/state.sqlite3
+
+# 厂商公开手册只在本机使用，不重分发
+data/equipment/manuals/real/*.pdf

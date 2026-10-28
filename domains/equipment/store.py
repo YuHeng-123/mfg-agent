@@ -11,6 +11,7 @@ import csv
 import json
 import re
 from functools import lru_cache
+from pathlib import Path
 
 from core.config import DATA_DIR
 from core.rag.index import Index
@@ -30,12 +31,45 @@ MANUAL_META = {
     "HE800_manual": {"doc_title": "HE800 板式换热器 使用与维护手册", "model_id": "HE800"},
 }
 
+# 真实手册通道：厂商公开手册由用户自行下载，放在 manuals/real/ 下，
+# 元数据写在 manuals/real/_meta.json。合成清单不动，两者合并使用。
+# 这样"换成真手册"只是丢文件 + 写一行 JSON，不用改代码。
+REAL_DIR = MAN_DIR / "real"
+REAL_META = REAL_DIR / "_meta.json"
+
+
+def real_meta() -> dict:
+    """真实手册的登记表。没有就返回空字典，不是错误状态。"""
+
+    if not REAL_META.is_file():
+        return {}
+    return json.loads(REAL_META.read_text(encoding="utf-8"))
+
+
+def manual_meta() -> dict:
+    """合成 + 真实，合并后的手册清单。
+
+    每次调用都重读真实登记表：换手册不该要求重启进程才能生效，
+    而合成那部分在模块加载时就定了，没必要重复读。
+    """
+
+    return {**MANUAL_META, **real_meta()}
+
+
+def manual_path(doc_id: str) -> Path | None:
+    for candidate in (MAN_DIR / f"{doc_id}.pdf", REAL_DIR / f"{doc_id}.pdf"):
+        if candidate.is_file():
+            return candidate
+    return None
+
 
 @lru_cache(maxsize=1)
 def chunks() -> tuple[Chunk, ...]:
     out: list[Chunk] = []
-    for doc_id, meta in MANUAL_META.items():
+    for doc_id, meta in manual_meta().items():
         pdf = MAN_DIR / f"{doc_id}.pdf"
+        if not pdf.is_file():
+            pdf = REAL_DIR / f"{doc_id}.pdf"
         if not pdf.is_file():
             continue
         out.extend(
@@ -114,7 +148,7 @@ def resolve_model(query: str, device_id: str | None = None) -> str | None:
     for device in devices().values():
         if device["device_id"] in query or device["name"] in query:
             return device["model_id"]
-    for model in MANUAL_META.values():
+    for model in manual_meta().values():
         if model["model_id"] in query.upper():
             return model["model_id"]
     return None

@@ -13,6 +13,63 @@
 
 ---
 
+## 架构
+
+两条业务线，一套能力层。`core` 占逻辑代码 59.1%（1931 / 3270 行），这不是估计，是 `evals/run.py` 每次算出来的。
+
+**检索是什么就是什么：bigram 分词 + BM25，字段加权（body 1.0 / section 1.8 / title 1.5）、低信息段落降权、型号硬过滤。没有向量检索，没有交叉编码器重排**——离线环境拉不到 embedding 模型，试过也没法复现，所以没上。这部分短板写在「本 demo 不证明什么」里。
+
+```mermaid
+flowchart TB
+    subgraph Data["数据层 · 全部合成，脚本可重跑"]
+        M["设备手册 PDF<br/>4 型号 · 48 段"]
+        S["传感器 CSV<br/>阈值比对"]
+        T["历史工单<br/>300 条"]
+        R["设备档案<br/>型号 / 产线"]
+        C1["标准条款节选<br/>GB19001-2026"]
+        C2["厂内文件 ×5"]
+    end
+
+    subgraph Core["能力层 core · 两条线共用"]
+        L["loader<br/>页眉页脚剔除 / 表格按 y 聚类重建 / 跨页合并"]
+        I["index<br/>bigram + BM25 · 型号硬过滤 · 低信息段落降权"]
+        G["guard<br/>安全规则 / 证据门槛 / 引用校验"]
+        A["agent loop<br/>子句分解 · 工具编排 · 拒答 · 写操作状态机"]
+    end
+
+    subgraph Use["业务线"]
+        E["设备运维<br/>带页码处置建议 + 工单草稿"]
+        F["文件换版体检<br/>差距清单 + 条款引用"]
+    end
+
+    M --> L
+    C1 --> L
+    C2 --> L
+    L --> I --> G --> A
+    S --> A
+    T --> A
+    R --> A
+    A --> E
+    A --> F
+```
+
+一次提问走的路——三道闸要么在模型之前，要么在生成之后，**不靠提示词求模型别乱说**：
+
+```mermaid
+flowchart LR
+    Q["问题"] --> Safe{"安全规则<br/>命中?"}
+    Safe -->|是| Block["safety_blocked<br/>不查库 · 不调模型"]
+    Safe -->|否| Scope["解析型号<br/>设备档案 / 型号码<br/>否则退到机型族"]
+    Scope --> Ret["BM25 检索<br/>子句分解 · 型号内过滤"]
+    Ret --> Gate{"证据闸<br/>命中词≥3 且信息量≥2.5"}
+    Gate -->|否| Ins["insufficient_evidence<br/>说清缺什么"]
+    Gate -->|是| Gen["生成<br/>stub 模板 / 真模型"]
+    Gen --> Cite{"引用校验<br/>chunk 是否本次检索到"}
+    Cite -->|伪造| Downgrade["降级；全部降级→拒答"]
+    Cite -->|通过| Ans["带页码回答"]
+    Ans --> Ticket["写操作<br/>draft → 人工确认"]
+```
+
 ## 现在能做什么
 
 三组命令都在 `provider=stub`（无网络、无 API key）下跑通。
