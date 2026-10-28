@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: 安装依赖
+        run: pip install -r requirements-dev.txt
+
+      - name: lint
+        run: python -m ruff check .
+
+      - name: 测试
+        # conftest 在语料缺失时会调 scripts/gen_*.py 现场生成，
+        # 所以这里既验证"仓库自带数据能跑"，也验证"空目录能重建"。
+        run: python -m pytest -q
+
+      - name: 初始化自检（空状态库 → 建 key → 报语料段数）
+        run: |
+          STATE_DB=$RUNNER_TEMP/state.sqlite3 python scripts/bootstrap.py

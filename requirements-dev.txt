@@ -2,3 +2,5 @@
 pytest>=8.0
 pymupdf>=1.24
 pdfplumber>=0.11
+# tests/test_deploy.py 要解析 docker-compose.yml；缺了它 CI 会在收集阶段就报错
+pyyaml>=6.0
