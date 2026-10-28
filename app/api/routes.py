@@ -5,10 +5,12 @@ from __future__ import annotations
 import json
 
 from fastapi import APIRouter, HTTPException
+from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel, Field
 
 from core.agent.loop import ask as run_ask
 from core.config import REPORTS_DIR, settings
+from core.observability import metrics
 from domains.base import available, load_domain
 
 router = APIRouter()
@@ -52,6 +54,7 @@ def ask_endpoint(req: AskRequest) -> dict:
         req.query,
         {"device_id": req.device_id, "model_id": req.model_id, "fault_code": req.fault_code},
     )
+    metrics.record_ask(req.domain, "refused" if result.answer.refusal else "answered")
     return result.to_dict()
 
 
@@ -128,6 +131,20 @@ def close_record(record_id: int, req: TransitionRequest | None = None) -> dict:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     except ValueError as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
+
+
+@router.get("/metrics", include_in_schema=False)
+def prometheus() -> PlainTextResponse:
+    """给 Prometheus 抓的。格式是文本 exposition，不是 JSON。"""
+
+    return PlainTextResponse(metrics.render_prometheus(), media_type="text/plain; version=0.0.4")
+
+
+@router.get("/api/metrics")
+def metrics_json() -> dict:
+    """同一批数字的 JSON 版，给页面和人工排查用。"""
+
+    return metrics.snapshot()
 
 
 @router.get("/api/eval/latest")

@@ -6,6 +6,7 @@ Then: http://127.0.0.1:8000/healthz  and  http://127.0.0.1:8000/
 
 from __future__ import annotations
 
+import time
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -15,6 +16,7 @@ from fastapi.staticfiles import StaticFiles
 from app.api.routes import router
 from app.boot import warm
 from core.config import ROOT, settings
+from core.observability import metrics
 
 WEB_DIR = ROOT / "web"
 
@@ -41,6 +43,24 @@ async def lifespan(_app: FastAPI):
 
 
 app.router.lifespan_context = lifespan
+
+
+@app.middleware("http")
+async def _observe(request, call_next):
+    """每个请求记一条：路径、状态码、耗时。
+
+    路径用路由模板而不是原始 URL（`/api/records/{record_id}/confirm` 而不是
+    `/api/records/17/confirm`），否则每个 id 都会变成一个独立的时间序列。
+    """
+
+    started = time.perf_counter()
+    response = await call_next(request)
+    elapsed_ms = (time.perf_counter() - started) * 1000
+    route = request.scope.get("route")
+    path = getattr(route, "path", request.url.path)
+    metrics.record_http(path, response.status_code, elapsed_ms)
+    response.headers["X-Response-Time-ms"] = f"{elapsed_ms:.1f}"
+    return response
 
 if WEB_DIR.is_dir():
     app.mount("/static", StaticFiles(directory=str(WEB_DIR)), name="static")
