@@ -261,3 +261,24 @@ def get_provider(name: str | None = None) -> Provider:
     if chosen in ("openai", "openai_compat", "real") and settings.real_provider_ready:
         return OpenAICompatProvider()
     return StubProvider()
+
+
+def provider_status() -> dict:
+    """配了什么、实际用了什么、为什么。
+
+    静默降级是这类系统最坑的地方：`PROVIDER=openai` 但没给 key，服务一声不响地
+    继续用 stub 答，演示时没人分得清"模型能力强"和"模板拼得好"。所以把这件事
+    变成一个可查的状态，启动时还会打一行警告。
+    """
+
+    chosen = (settings.provider or "stub").lower()
+    wants_real = chosen in ("openai", "openai_compat", "real")
+    ready = settings.real_provider_ready
+    effective = "openai_compat" if (wants_real and ready) else "stub"
+    if wants_real and not ready:
+        reason = "PROVIDER 指定了真模型，但没有 LLM_API_KEY，已回落到 stub"
+    elif wants_real:
+        reason = f"使用 {settings.model_name} @ {settings.base_url}"
+    else:
+        reason = "stub（模板拼装，离线可复现；不代表模型能力）"
+    return {"configured": chosen, "effective": effective, "ready": ready, "reason": reason}

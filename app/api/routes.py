@@ -317,9 +317,12 @@ def healthz() -> dict:
     from app.boot import health
 
     h = health()
+    from core.agent.providers import provider_status
+
     return {
         "status": "ok" if h["index_ready"] else "degraded",
         "provider": settings.provider,
+        "provider_status": provider_status(),
         "real_provider_ready": settings.real_provider_ready,
         "domains": available(),
         "index_ready": h["index_ready"],

@@ -52,6 +52,10 @@ async def lifespan(_app: FastAPI):
             f"[boot] 首次启动，已创建 {len(created)} 把 API key"
             + ("（默认 key，试点前必须改 MFG_ADMIN_KEY / MFG_USER_KEY）" if default else "")
         )
+    from core.agent.providers import provider_status
+
+    status = provider_status()
+    print(f"[boot] provider={status['effective']}：{status['reason']}")
     yield
 
 
