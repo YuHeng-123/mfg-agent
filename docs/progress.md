@@ -96,3 +96,50 @@
 - `docker compose up` 必须在有 docker 的机器上验一次，把结果补进本节。
 - 审计表无归档策略（100 万行以内不用管，ops.md 已写）。
 - 配额计数在进程内存，多副本要换 Redis（ops.md 已写）。
+
+---
+
+## P2 OmniAgent 去仿真 · 2026-10-28
+
+仓库：`D:/Codex/Projects/OmniAgent-Platform`（commit `7adee46`）。两个项目仍然完全独立，没有合并。
+
+读 `services.yaml` 与 `routers/gateway.py` 后发现，真实情况比任务书里写的更微妙：
+
+| 项 | 任务书假设 | 实际情况 |
+|---|---|---|
+| 鉴权 | 「已仿真」 | 有 HMAC-SHA256 JWT + RBAC，**但** `get_tenant_context()` 在 Bearer 解析失败时会继续向下落到默认开发租户（`role=admin`）——换个坏 Token 反而拿到管理员 |
+| 配额 | 「已仿真」 | 完全没有。`FAILOVER_SCENARIOS` 里的 429 只是一段演示文本，服务端从未拒绝过请求 |
+| 转发 | 「主备热切是仿真」 | 属实，仍是 `sleep(0.038)` + 模板回复 |
+
+所以做了三件事：
+
+1. **真配额**（`core/quota.py`）：按租户分钟/天双窗口，超阈值 429，带
+   `X-Quota-Remaining` / `X-Quota-Limit` / `X-Quota-Window` / `Retry-After`。
+   新增 `GET /api/v1/gateway/quota` 只读查询。计数在进程内存，多副本要换 Redis（已写进 README）。
+2. **真鉴权**：修掉上面的降级洞；`/v1/chat/completions` 改为只认 JWT
+   （`X-Tenant-ID` 标头谁都能编，不能当身份凭证）。
+3. **前端配套**：`openaiChat` 无 JWT 时先取 token 再请求，避免演示面板因为 401 掉到本地降级。
+
+**怎么验证的**（不只是 TestClient，还起了真进程 `OMNI_PORT=8911 OMNI_QUOTA_PER_MINUTE=2`）：
+
+```
+无 token                → 401
+只带 X-Tenant-ID        → 401
+有效 JWT（第 1 次）      → 200，响应头 x-quota-remaining: 1
+第 2 次                 → 200
+第 3 次                 → 429，retry-after: 58，x-quota-remaining: 0
+另一个租户              → 200（额度按租户隔离）
+/api/v1/gateway/quota   → {"used_last_minute":1,"remaining":1,...}
+```
+
+测试：**70 → 78 passed**（新增 8 条），`ruff check .` 干净。
+
+**README 的改法**（这条最关键）：原文「它不是什么」里写着「没有配额账本」——现在有了，
+所以改成"这一轮加了，但只管网关代理这一个入口，不是全平台计费账本"。
+「主备热切是仿真」那句**一个字没动**，因为它仍然是真的。
+
+**遗留**
+- 配额是进程内存，横向扩容要换 Redis
+- 上游转发仍是仿真：本机没有可用模型线路，不做假的透传
+- `/api/v1/auth/token` 是无认证的签发端点（谁都能要一个 admin token）。这是演示级设计，
+  要上生产必须换成公司 SSO/IdP。**这一条没有改**，如实记在这里
