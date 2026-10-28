@@ -1,5 +1,7 @@
 -r requirements.txt
 pytest>=8.0
+# CI 要跑 lint。之前它只装在我本机环境里，没写进文件——第一次 CI 就撞上了
+ruff>=0.6
 pymupdf>=1.24
 pdfplumber>=0.11
 # tests/test_deploy.py 要解析 docker-compose.yml；缺了它 CI 会在收集阶段就报错
