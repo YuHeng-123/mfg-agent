@@ -4,13 +4,14 @@ from __future__ import annotations
 
 import json
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel, Field
 
 from core.agent.loop import ask as run_ask
 from core.config import REPORTS_DIR, settings
 from core.observability import metrics
+from core.store import audit
 from domains.base import available, load_domain
 
 router = APIRouter()
@@ -38,8 +39,16 @@ class GapRecordRequest(BaseModel):
     note: str = ""
 
 
+def _caller(request: Request) -> tuple[str, str]:
+    """调用方身份。鉴权中间件没装时退到匿名，装了就从 request.state 取。"""
+
+    actor = getattr(request.state, "actor", None) or "anonymous"
+    role = getattr(request.state, "role", None) or "anonymous"
+    return actor, role
+
+
 @router.post("/api/ask")
-def ask_endpoint(req: AskRequest) -> dict:
+def ask_endpoint(req: AskRequest, request: Request) -> dict:
     if req.domain not in available():
         raise HTTPException(status_code=404, detail=f"unknown domain: {req.domain}")
     # An empty corpus produces refusals that look like a retrieval problem. Say
@@ -55,7 +64,39 @@ def ask_endpoint(req: AskRequest) -> dict:
         {"device_id": req.device_id, "model_id": req.model_id, "fault_code": req.fault_code},
     )
     metrics.record_ask(req.domain, "refused" if result.answer.refusal else "answered")
-    return result.to_dict()
+
+    body = result.to_dict()
+    actor, role = _caller(request)
+    try:
+        audit.write(
+            actor=actor,
+            role=role,
+            domain=req.domain,
+            question=req.query,
+            outcome="refused" if result.answer.refusal else "answered",
+            refusal_kind=(result.answer.refusal.kind if result.answer.refusal else None),
+            citation_ids=[c["chunk_id"] for c in body["citations"]],
+            elapsed_ms=body["elapsed_ms"],
+            provider=body["provider"],
+        )
+    except Exception as exc:
+        # 没留痕就别应答：宁可这次报错，也不要出现"答了但查无此事"。
+        raise HTTPException(status_code=503, detail=f"审计写入失败，已拒绝本次应答：{exc}") from exc
+    return body
+
+
+@router.get("/api/audit")
+def audit_log(request: Request, limit: int = 50, actor: str | None = None, domain: str | None = None) -> dict:
+    """谁问的、什么时候、问了什么、命中哪些 chunk。
+
+    普通用户只能看自己的记录；管理员可以按 actor 查别人的。
+    """
+
+    caller, role = _caller(request)
+    if role != "admin":
+        actor = caller
+    rows = audit.query(limit=limit, actor=actor, domain=domain)
+    return {"items": rows, "count": len(rows), "scope": "all" if role == "admin" else "self"}
 
 
 @router.post("/api/tickets/draft")
