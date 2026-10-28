@@ -1,5 +1,7 @@
 # 设备知识 Agent · 取用与体检
 
+[![CI](https://github.com/YuHeng-123/mfg-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/YuHeng-123/mfg-agent/actions/workflows/ci.yml)
+
 > **本仓库全部设备、工单、传感器、标准条款与厂内文件均为合成示例，由本仓库脚本生成，用于验证流程与排版。不含任何真实工厂数据与企业信息。**
 
 一个企业知识库，挂两种用法，共用同一套能力层：

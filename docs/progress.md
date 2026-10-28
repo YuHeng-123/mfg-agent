@@ -143,3 +143,24 @@
 - 上游转发仍是仿真：本机没有可用模型线路，不做假的透传
 - `/api/v1/auth/token` 是无认证的签发端点（谁都能要一个 admin token）。这是演示级设计，
   要上生产必须换成公司 SSO/IdP。**这一条没有改**，如实记在这里
+
+---
+
+## 开源发布 · 2026-10-28
+
+- 做了什么
+  - 新建公开仓库 `https://github.com/YuHeng-123/mfg-agent`，推送 `main`（165 个文件，5.6 MB）。
+  - 加 `.github/workflows/ci.yml`：Python 3.12 / 3.13 双版本，`ruff` → `pytest` → `bootstrap.py` 自检。
+  - README 顶部加 CI 徽章。
+  - 顺带把 OmniAgent 的 `7adee46`（真鉴权 + 真配额）推到 `origin/main`。
+- 怎么验证的
+  - 推送前扫过敏感串（`gho_` / `ghp_` / `sk-` / 手机号 / 邮箱）——0 命中；
+    `state.sqlite3`、`real/*.pdf`、`.env` 均未入库，只有 `.env.example`（占位值）。
+  - CI 第一次跑**失败**：`No module named ruff` —— ruff 是本机手工装的，没写进 `requirements-dev.txt`。
+    补上后第二次 `success`（`actions/runs/40696663883`）。
+  - 同时补了 `pyyaml`：`tests/test_deploy.py` 要解析 compose 文件，缺了会在收集阶段就报错。
+- 数字变化
+  - 无（代码没改，只加 CI 与依赖声明）。
+- 遗留
+  - 没有 LICENSE 文件（要不要补 MIT 由作者定，未擅自加）。
+  - `docker compose up` 仍未实跑（本机无 docker），CI 里也只做静态校验。
