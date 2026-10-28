@@ -4,11 +4,13 @@ from __future__ import annotations
 
 import json
 
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import PlainTextResponse
 from pydantic import BaseModel, Field
 
+from app.api.security import require_admin
 from core.agent.loop import ask as run_ask
+from core.auth import keys
 from core.config import REPORTS_DIR, settings
 from core.observability import metrics
 from core.store import audit
@@ -100,7 +102,7 @@ def audit_log(request: Request, limit: int = 50, actor: str | None = None, domai
 
 
 @router.post("/api/tickets/draft")
-def ticket_draft(req: DraftRequest) -> dict:
+def ticket_draft(req: DraftRequest, _admin: None = Depends(require_admin)) -> dict:
     """Write path. Always lands as a draft; a human has to confirm it."""
 
     from domains.equipment.tools import create_ticket_draft
@@ -117,7 +119,7 @@ def ticket_draft(req: DraftRequest) -> dict:
 
 
 @router.post("/api/gaps/record")
-def gap_record(req: GapRecordRequest) -> dict:
+def gap_record(req: GapRecordRequest, _admin: None = Depends(require_admin)) -> dict:
     from domains.compliance.tools import record_gap
 
     result = record_gap(
@@ -151,7 +153,9 @@ class TransitionRequest(BaseModel):
 
 
 @router.post("/api/records/{record_id}/confirm")
-def confirm_record(record_id: int, req: TransitionRequest | None = None) -> dict:
+def confirm_record(
+    record_id: int, req: TransitionRequest | None = None, _admin: None = Depends(require_admin)
+) -> dict:
     from core.store import records as store
 
     try:
@@ -163,7 +167,9 @@ def confirm_record(record_id: int, req: TransitionRequest | None = None) -> dict
 
 
 @router.post("/api/records/{record_id}/close")
-def close_record(record_id: int, req: TransitionRequest | None = None) -> dict:
+def close_record(
+    record_id: int, req: TransitionRequest | None = None, _admin: None = Depends(require_admin)
+) -> dict:
     from core.store import records as store
 
     try:
@@ -172,6 +178,63 @@ def close_record(record_id: int, req: TransitionRequest | None = None) -> dict:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     except ValueError as exc:
         raise HTTPException(status_code=409, detail=str(exc)) from exc
+
+
+@router.get("/api/auth/whoami")
+def whoami(request: Request) -> dict:
+    """页面用这个判断"要不要弹输入框要 key"。
+
+    没 key 或 key 无效时中间件已经返回 401 了，所以能走到这里就说明认出来了。
+    """
+
+    actor, role = _caller(request)
+    return {"actor": actor, "role": role, "auth_enabled": settings.auth_enabled}
+
+
+class IssueKeyRequest(BaseModel):
+    name: str = Field(min_length=1, max_length=40)
+    role: str = "user"
+
+
+@router.get("/api/admin/keys")
+def list_api_keys(_admin: None = Depends(require_admin)) -> dict:
+    return {"items": keys.list_keys()}
+
+
+@router.post("/api/admin/keys")
+def create_api_key(req: IssueKeyRequest, _admin: None = Depends(require_admin)) -> dict:
+    """发一把新 key。明文只在这里返回一次，库里只有哈希。"""
+
+    try:
+        raw = keys.issue(req.name, req.role)
+    except Exception as exc:  # 重名或角色非法
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return {"name": req.name, "role": req.role, "key": raw, "note": "此 key 只显示这一次，请立即保存"}
+
+
+@router.post("/api/admin/reload")
+def reload_corpus(_admin: None = Depends(require_admin)) -> dict:
+    """灌完新手册后调它：清各域缓存 → 重建索引 → 返回自检结果。
+
+    为什么不自动监听文件：自动重载会在"手册复制到一半"的时候把索引建坏，
+    而且事后没人说得清是哪一刻变的。显式一次调用，谁改的谁负责。
+    """
+
+    from app.boot import warm
+    from domains.base import available as names
+    from domains.base import load_domain as load
+
+    for name in names():
+        load(name).invalidate()
+
+    state = warm()
+    return {
+        "reloaded": True,
+        "index_ready": state["ready"],
+        "warm_ms": state["warm_ms"],
+        "corpus": state["domains"],
+        "issues": state["issues"],
+    }
 
 
 @router.get("/metrics", include_in_schema=False)

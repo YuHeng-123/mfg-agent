@@ -78,6 +78,14 @@ class Domain(Protocol):
     def index(self) -> Any:
         """The domain's own index. Built on demand, warmed at startup."""
 
+    def invalidate(self) -> None:
+        """Drop cached chunks and index, so the next call rebuilds from disk.
+
+        Exists because the corpus is reloaded by an explicit admin action, not by
+        watching the filesystem: a half-copied PDF must not become a half-built
+        index nobody can explain.
+        """
+
     def sources(self) -> list[Path]:
         """Files the startup self-check looks for."""
 

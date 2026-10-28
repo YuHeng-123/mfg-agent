@@ -25,6 +25,10 @@ class ComplianceDomain(Domain):
     def index(self):
         return store.index()
 
+    def invalidate(self) -> None:
+        store.chunks.cache_clear()
+        store.index.cache_clear()
+
     def sources(self) -> list[Path]:
         return [
             *sorted(store.STANDARD_DIR.glob("*.md")),

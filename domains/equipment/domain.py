@@ -25,6 +25,10 @@ class EquipmentDomain(Domain):
     def index(self):
         return store.index()
 
+    def invalidate(self) -> None:
+        store.chunks.cache_clear()
+        store.index.cache_clear()
+
     def sources(self) -> list[Path]:
         """Files the startup self-check looks for. Missing ones are reported, not crashed on."""
 

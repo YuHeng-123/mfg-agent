@@ -119,6 +119,16 @@
           color:var(--red);font-size:13px;display:none}
   .hint{font-size:11px;color:var(--ink3);margin-top:6px}
 
+  .keybar{margin:12px 18px 0;padding:9px 14px;border:1px solid var(--line2);border-radius:10px;
+          background:var(--amber-bg);display:flex;align-items:center;gap:9px;flex-wrap:wrap;font-size:12.5px}
+  .keybar .tag{font-size:11px;font-weight:600;border:1px solid currentColor;border-radius:4px;
+               padding:0 5px;color:var(--amber)}
+  .keybar span{color:var(--amber)}
+  .keybar input{flex:1;min-width:220px;border:1px solid #e6cf9a;border-radius:7px;padding:6px 10px;
+                font:inherit;font-size:12.5px;background:#fff}
+  .keybar button{border:1px solid #e6cf9a;background:#fff;color:var(--amber);border-radius:7px;
+                 padding:5px 12px;font-size:12.5px}
+
   @media (max-width:900px){
     .meta{display:none}
     .brand small{display:none}
@@ -157,8 +167,16 @@
   <div class="meta">
     <span>provider <b id="provider">stub</b></span>
     <span id="corpus"></span>
+    <span id="who"></span>
   </div>
 </header>
+
+<div class="keybar" id="keybar" hidden>
+  <span class="tag">鉴权</span>
+  <span id="keymsg">需要访问密钥</span>
+  <input id="keyinput" type="password" placeholder="粘贴 X-API-Key，例如 mfg_admin_…" autocomplete="off">
+  <button id="keysave" type="button">保存并验证</button>
+</div>
 
 <div class="banner" id="banner"></div>
 
@@ -215,6 +233,41 @@ let last = null;
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+/* ---- 访问密钥 ----
+   服务端对 /api/* 要 X-API-Key。页面不内置任何 key（内置就等于公开），
+   首次打开要求粘贴一次，存 localStorage。401 时清掉并重新要。 */
+const KEY_STORE = "mfg_api_key";
+let role = null;
+const getKey = () => localStorage.getItem(KEY_STORE) || "";
+
+async function apiFetch(path, opts = {}){
+  const headers = Object.assign({}, opts.headers || {});
+  const k = getKey();
+  if (k) headers["X-API-Key"] = k;
+  if (opts.body && !headers["Content-Type"]) headers["Content-Type"] = "application/json";
+  const res = await fetch(path, Object.assign({}, opts, {headers}));
+  if (res.status === 401){ showKeyBar("密钥无效或未填写"); }
+  return res;
+}
+
+function showKeyBar(msg){
+  $("keybar").hidden = false;
+  $("keymsg").textContent = msg || "需要访问密钥";
+  if (role){ role = null; $("who").textContent = ""; }
+}
+
+function hideKeyBar(){ $("keybar").hidden = true; }
+
+async function checkAuth(){
+  const res = await apiFetch("/api/auth/whoami");
+  if (res.status === 401){ showKeyBar("请输入访问密钥（首次使用请向管理员索取）"); return false; }
+  const j = await res.json();
+  role = j.role;
+  $("who").textContent = `${j.actor} · ${j.role}`;
+  hideKeyBar();
+  return true;
+}
 
 function setDomain(next){
   domain = next;
@@ -341,7 +394,7 @@ function renderDraft(data){
       <button id="mk">生成工单草稿</button>`;
     bar.hidden = false;
     $("mk").onclick = async () => {
-      const r = await fetch("/api/tickets/draft", {method:"POST", headers:{"Content-Type":"application/json"},
+      const r = await apiFetch("/api/tickets/draft", {method:"POST", headers:{"Content-Type":"application/json"},
         body: JSON.stringify({device_id: deviceId, fault_code: code, symptom: data.question})});
       const j = await r.json();
       bar.innerHTML = `<span class="tag">已存</span>
@@ -355,7 +408,7 @@ function renderDraft(data){
     bar.hidden = false;
     $("rec").onclick = async () => {
       for (const f of data.findings){
-        await fetch("/api/gaps/record", {method:"POST", headers:{"Content-Type":"application/json"},
+        await apiFetch("/api/gaps/record", {method:"POST", headers:{"Content-Type":"application/json"},
           body: JSON.stringify({gap_id: f.gap_id, clause_id: f.clause_id, target_doc: f.target_doc, note: f.advice})});
       }
       bar.innerHTML = `<span class="tag">已存</span>
@@ -397,7 +450,8 @@ function renderRecords(items){
     </div>`).join("");
   box.querySelectorAll("button[data-act]").forEach(b => {
     b.onclick = async () => {
-      await fetch(`/api/records/${b.dataset.id}/${b.dataset.act}`, {method:"POST"});
+      const res = await apiFetch(`/api/records/${b.dataset.id}/${b.dataset.act}`, {method:"POST"});
+      if (res.status === 403){ alert("该操作需要管理员权限"); }
       await loadRecords();
     };
   });
@@ -405,7 +459,7 @@ function renderRecords(items){
 
 async function loadRecords(){
   try{
-    const j = await (await fetch("/api/records?limit=5")).json();
+    const j = await (await apiFetch("/api/records?limit=5")).json();
     renderRecords(j.items || []);
   }catch(e){ /* 记录面板失败不影响主流程 */ }
 }
@@ -414,11 +468,20 @@ async function ask(){
   const input = $("q");
   const text = input.value.trim();
   if (!text) return;
+  if (!getKey()){ showKeyBar("先填写访问密钥再提问"); return; }
   $("send").disabled = true;
   try{
-    const res = await fetch("/api/ask", {method:"POST", headers:{"Content-Type":"application/json"},
+    const res = await apiFetch("/api/ask", {method:"POST", headers:{"Content-Type":"application/json"},
       body: JSON.stringify({domain, query: text})});
+    if (res.status === 401){ showKeyBar("密钥无效，请重新填写"); return; }
+    if (res.status === 429){
+      const j = await res.json();
+      $("banner").style.display = "block";
+      $("banner").textContent = `请求过于频繁：${j.detail}（${j.retry_after} 秒后可重试）`;
+      return;
+    }
     if (!res.ok) throw new Error("HTTP " + res.status);
+    $("banner").style.display = "none";
     const data = await res.json();
     last = data;
     renderAnswer(data);
@@ -436,19 +499,34 @@ async function boot(){
   $("form").onsubmit = (e) => { e.preventDefault(); ask(); };
   setDomain("equipment");
 
+  $("keysave").onclick = async () => {
+    const value = $("keyinput").value.trim();
+    if (!value){ $("keymsg").textContent = "请先粘贴密钥"; return; }
+    localStorage.setItem(KEY_STORE, value);
+    const ok = await checkAuth();
+    if (ok){ $("keyinput").value = ""; $("banner").style.display = "none"; loadRecords(); loadStats(); }
+    else { localStorage.removeItem(KEY_STORE); }
+  };
+
+  await checkAuth();
+  loadRecords();
+  loadStats();
+}
+
+async function loadStats(){
   try{
-    const h = await (await fetch("/healthz")).json();
+    const h = await (await apiFetch("/healthz")).json();
     $("provider").textContent = h.provider;
   }catch(e){}
 
   try{
-    const s = await (await fetch("/api/domain/equipment/stats")).json();
-    const c = await (await fetch("/api/domain/compliance/stats")).json();
+    const s = await (await apiFetch("/api/domain/equipment/stats")).json();
+    const c = await (await apiFetch("/api/domain/compliance/stats")).json();
     $("corpus").textContent = `设备 ${s.chunks} 段 · 体检 ${c.chunks} 段`;
   }catch(e){}
 
   try{
-    const m = await (await fetch("/api/eval/latest")).json();
+    const m = await (await apiFetch("/api/eval/latest")).json();
     if (m.available){
       const pct = v => (v * 100).toFixed(1) + "%";
       const cells = [
@@ -467,8 +545,6 @@ async function boot(){
            <div class="s" style="font-family:var(--mono)">${esc(m.file)} · provider ${esc(m.provider)} · ${esc(m.generated_at)}</div></div>`;
     }
   }catch(e){}
-
-  loadRecords();
 }
 boot();
 </script>
